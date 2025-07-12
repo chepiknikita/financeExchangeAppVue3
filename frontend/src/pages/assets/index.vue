@@ -1,0 +1,83 @@
+<template>
+  <div>
+    <v-tabs
+      v-model="tab"
+      bg-color="transparent"
+      color="basil"
+      align-tabs="center"
+    >
+      <v-tab
+        v-for="item in tabs"
+        :key="item.key"
+        :text="item.name"
+        :value="item.key"
+        class="text-none text-body-1"
+      />
+    </v-tabs>
+    <div class="page-wrapper">
+      <v-tabs-window v-model="tab">
+        <v-tabs-window-item value="stock" class="my-0 mx-auto">
+          <finance-table
+            :headers="headers"
+            :items="stocks"
+            @click:row="onSelectAsset"
+          />
+        </v-tabs-window-item>
+        <v-tabs-window-item value="bond" class="my-0 mx-auto">
+          <finance-table
+            :headers="headers"
+            :items="bonds"
+            @click:row="onSelectAsset"
+          />
+        </v-tabs-window-item>
+        <v-tabs-window-item value="metal" class="my-0 mx-auto">
+          <finance-table
+            :headers="headers"
+            :items="metals"
+            @click:row="onSelectAsset"
+          />
+        </v-tabs-window-item>
+      </v-tabs-window>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
+import { ApiFactory } from "@/api";
+import type { Asset } from "@/api/intarfaces/asset";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const assetService = ApiFactory.createAssetsService();
+
+const tab = ref(null);
+const stocks = ref<Asset[]>([]);
+const bonds = ref<Asset[]>([]);
+const metals = ref<Asset[]>([]);
+
+const tabs = [
+  { name: "Акции", key: "stock" },
+  { name: "Облигации", key: "bond" },
+  { name: "Металлы", key: "metal" },
+];
+
+const headers = [
+  { title: "Название", key: "name", width: "90%" },
+  { title: "Цена", key: "price" },
+];
+
+onMounted(async () => {
+  const assets: Asset[] = await assetService.getAll();
+  stocks.value = assets.filter((v) => v.type === "stock");
+  bonds.value = assets.filter((v) => v.type === "bond");
+  metals.value = assets.filter((v) => v.type === "metal");
+});
+
+const onSelectAsset = (item: Asset) => {
+  router.push(`/assets/${item.id}`);
+};
+</script>
+
+<style scoped></style>

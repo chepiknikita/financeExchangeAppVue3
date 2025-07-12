@@ -1,0 +1,84 @@
+<template>
+  <div class="page-wrapper">
+    <div class="page-content-title">
+      <div class="text-h6">
+        Список пользователей
+      </div>
+    </div>
+    <div class="page-content-body">
+      <div class="text-body-1 my-2 mx-4">
+        Выберите пользователя для входа
+      </div>
+      <div class="table-user">
+        <v-data-table
+          :items="users"
+          :headers="headers"
+          density="compact"
+          item-value="name"
+          hide-default-footer
+          hide-default-header
+          hover
+          select-strategy="single"
+          return-object
+          @click:row="onSelectUser"
+        />
+      </div>
+      <div class="text-body-2 my-2 mx-4">
+        Проект разработан в учебных целях, для получения опыта работы на новых технологиях.
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { ApiFactory } from '@/api';
+import type { User } from '@/api/intarfaces/user';
+import { useRouter } from 'vue-router';
+import { definePage } from 'vue-router/auto';
+
+definePage({
+  meta: {
+    layout: 'auth',
+  }
+});
+
+const router = useRouter();
+const userService = ApiFactory.createUserService();
+
+const headers = [
+  {
+    title: 'Пользователь',
+    key: 'name',
+    width: '50%',
+  },
+  {
+    title: 'Логин',
+    key: 'login',
+    width: '20%',
+    align: 'end',
+  },
+  {
+    title: 'Баланс',
+    key: 'balance',
+    width: '30%',
+    align: 'end',
+  },
+];
+const users = ref<User[]>([]);
+
+onMounted(async () => {
+  users.value = await userService.getAll();
+});
+
+const onSelectUser = (event: MouseEvent, row: { item: User }) => {
+  sessionStorage.setItem('user', btoa(JSON.stringify({ id: row.item.id, role: row.item.role })));
+  router.push(row.item.role);
+};
+</script>
+
+<style scoped>
+.table-user {
+  width: 500px;
+}
+</style>
