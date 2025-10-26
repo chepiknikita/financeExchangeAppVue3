@@ -1,13 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Asset, PriceHistory, UserAsset } from './entities/asset.entity';
+import { WebSocketFacadeService } from '../websocket/services/websocket-facade.service';
 
 @Injectable()
 export class AssetService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private webSocketFacade: WebSocketFacadeService,
+  ) {}
 
   async getAll(): Promise<Asset[]> {
     return await this.prisma.asset.findMany();
+  }
+
+  async getEntityById(id: number): Promise<Asset> {
+    const asset = await this.prisma.asset.findUnique({ where: { id } });
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+    return asset;
   }
 
   async getById(id: number): Promise<Asset> {
@@ -20,9 +32,12 @@ export class AssetService {
   }
 
   async getAssetHistory(id: number): Promise<PriceHistory[]> {
+    await this.getEntityById(id); // Check if asset exists
+
     return await this.prisma.priceHistory.findMany({
       where: { id },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: 'asc' },
+      take: 100, // Last 100 price points
     });
   }
 
@@ -35,60 +50,104 @@ export class AssetService {
     });
   }
 
-  async updateAssetPrice(assetId: number, updatedPrice: number): Promise<Asset> {
-    // Обновляем текущую цену
-    const updatedAsset = await this.prisma.asset.update({
-      where: { id: assetId },
-      data: { price: updatedPrice },
-    });
+  async updateAssetPrice(
+    assetId: number,
+    updatedPrice: number,
+  ): Promise<Asset> {
+    return this.prisma.$transaction(async (tx) => {
+      // Обновляем текущую цену
+      const updatedAsset = await tx.asset.update({
+        where: { id: assetId },
+        data: { price: updatedPrice },
+      });
 
-    // Добавляем запись в историю
-    await this.prisma.priceHistory.create({
-      data: {
+      // Добавляем запись в историю
+      await tx.priceHistory.create({
+        data: {
+          assetId,
+          price: updatedPrice,
+        },
+      });
+
+      await this.webSocketFacade.broadcastAssetPriceUpdate(assetId, {
         assetId,
         price: updatedPrice,
-      },
-    });
+        asset: updatedAsset,
+        timestamp: new Date(),
+      });
 
-    return updatedAsset;
+      return updatedAsset;
+    });
   }
 
+  async calculateProfitLoss(
+    userId: number,
+  ): Promise<{ [key: number]: number }> {
+    const userAssets = await this.getUserPortfolio(userId);
+    const profitLoss: { [key: number]: number } = {};
 
+    for (const userAsset of userAssets) {
+      const priceHistory = await this.prisma.priceHistory.findFirst({
+        where: { assetId: userAsset.assetId },
+        orderBy: { timestamp: 'asc' },
+      });
 
-  async buyStock(userId: number, assetId: number, quantity: number): Promise<UserAsset> {
-    const existing = await this.prisma.userAsset.findFirst({
-      where: { userId, assetId },
-    });
-    
-    // Todo: добавить вычет из глобального списка акции
-    if (existing) {
-      return this.prisma.userAsset.update({
-        where: { id: existing.id },
-        data: { quantity: existing.quantity + quantity },
-      });
-    } else {
-      return this.prisma.userAsset.create({
-        data: { userId, assetId, quantity },
-      });
+      if (priceHistory) {
+        const currentValue = userAsset.quantity * userAsset.asset.price;
+        const initialValue = userAsset.quantity * priceHistory.price;
+        profitLoss[userAsset.assetId] = currentValue - initialValue;
+      }
+    }
+
+    return profitLoss;
+  }
+
+  async updateAssetPrices(): Promise<void> {
+    const assets = await this.getAll();
+
+    for (const asset of assets) {
+      // Generate random price change between -5% and +5%
+      const changePercent = (Math.random() * 10 - 5) / 100;
+      const newPrice = Math.max(0.01, asset.price * (1 + changePercent));
+
+      await this.updateAssetPrice(asset.id, parseFloat(newPrice.toFixed(2)));
     }
   }
 
-  async sellStock(userId: number, assetId: number, quantity: number): Promise<UserAsset | null> {
-    const existing = await this.prisma.userAsset.findFirst({
-      where: { userId, assetId },
-    });
+  // async buyStock(userId: number, assetId: number, quantity: number): Promise<UserAsset> {
+  //   const existing = await this.prisma.userAsset.findFirst({
+  //     where: { userId, assetId },
+  //   });
 
-    if (!existing) return null;
-    // Todo: добавить количество в глобальном списке акции
-    const newQuantity = existing.quantity - quantity;
-    if (newQuantity <= 0) {
-      await this.prisma.userAsset.delete({ where: { id: existing.id } });
-      return null;
-    }
+  //   // Todo: добавить вычет из глобального списка акции
+  //   if (existing) {
+  //     return this.prisma.userAsset.update({
+  //       where: { id: existing.id },
+  //       data: { quantity: existing.quantity + quantity },
+  //     });
+  //   } else {
+  //     return this.prisma.userAsset.create({
+  //       data: { userId, assetId, quantity },
+  //     });
+  //   }
+  // }
 
-    return this.prisma.userAsset.update({
-      where: { id: existing.id },
-      data: { quantity: newQuantity },
-    });
-  }
+  // async sellStock(userId: number, assetId: number, quantity: number): Promise<UserAsset | null> {
+  //   const existing = await this.prisma.userAsset.findFirst({
+  //     where: { userId, assetId },
+  //   });
+
+  //   if (!existing) return null;
+  //   // Todo: добавить количество в глобальном списке акции
+  //   const newQuantity = existing.quantity - quantity;
+  //   if (newQuantity <= 0) {
+  //     await this.prisma.userAsset.delete({ where: { id: existing.id } });
+  //     return null;
+  //   }
+
+  //   return this.prisma.userAsset.update({
+  //     where: { id: existing.id },
+  //     data: { quantity: newQuantity },
+  //   });
+  // }
 }

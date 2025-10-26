@@ -27,4 +27,9 @@ export class AssetController {
   ): Promise<UserAsset[]> {
     return await this.assetService.getUserPortfolio(+userId);
   }
+
+  @Get('profit-loss/:userId')
+  getProfitLoss(@Param('userId') userId: string) {
+    return this.assetService.calculateProfitLoss(+userId);
+  }
 }

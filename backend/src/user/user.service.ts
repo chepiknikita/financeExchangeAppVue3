@@ -41,4 +41,20 @@ export class UserService {
       data: updateUserDto,
     });
   }
+
+  async updateBalance(userId: number, amount: number): Promise<User> {
+    const user = await this.getById(userId);
+    const newBalance = user.balance + amount;
+
+    if (newBalance < 0) {
+      throw new Error('Insufficient funds');
+    }
+
+    return await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: { balance: newBalance },
+    });
+  }
 }

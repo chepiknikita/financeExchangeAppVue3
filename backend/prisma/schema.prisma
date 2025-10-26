@@ -15,12 +15,15 @@ datasource db {
 }
 
 model User {
-  id        Int         @id @default(autoincrement())
-  login     String      @unique
-  name      String
-  balance   Int
-  role      String
-  assets    UserAsset[]
+  id      Int         @id @default(autoincrement())
+  login   String      @unique
+  name    String
+  balance Float       @default(0.0)
+  role    UserRole
+  assets  UserAsset[]
+  orders  Order[]
+
+  @@map("users")
 }
 
 model Asset {
@@ -28,32 +31,74 @@ model Asset {
   ticker     String         @unique
   name       String
   type       String
-  price      Int
+  price      Float
   quantity   Int            @default(0)
   history    PriceHistory[]
   userAssets UserAsset[]
+  orders     Order[]
+
+  @@map("assets")
 }
 
 model PriceHistory {
   id        Int      @id @default(autoincrement())
-  asset     Asset    @relation(fields: [assetId], references: [id])
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
   assetId   Int
-  price     Int
+  price     Float
   timestamp DateTime @default(now())
+
+  @@map("price_history")
 }
 
 model UserAsset {
   id       Int   @id @default(autoincrement())
-  user     User  @relation(fields: [userId], references: [id])
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int
-  asset    Asset @relation(fields: [assetId], references: [id])
+  asset    Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
   assetId  Int
   quantity Int   @default(0)
+
+  @@map("user_assets")
 }
 
 model Exchange {
-  id     Int      @id @default(autoincrement())
-  start  DateTime
-  end    DateTime
-  mode String
+  id            Int       @id @default(autoincrement())
+  start         DateTime
+  end           DateTime?
+  isTrading     Boolean   @default(false)
+
+  @@map("exchange")
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  userId     Int
+  assetId    Int
+  type       OrderType
+  quantity   Int
+  price      Float
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  executedAt DateTime?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum OrderType {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  EXECUTED
+  CANCELLED
 }

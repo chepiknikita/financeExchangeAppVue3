@@ -1,24 +1,46 @@
-import type { ExchangeInfo, ExchangeInfoEdit } from "../intarfaces/exchange";
+import type { ExchangeInfo } from "../intarfaces/exchange";
 import type ExchangeRepository from "../repositories/ExchangeRepository";
 
 export class ExchangeService {
   constructor(private repository: ExchangeRepository) {}
 
-  async getInfo(): Promise<ExchangeInfo[] | null> {
+  async getStatus(): Promise<ExchangeInfo | null> {
     try {
-      const info = (await this.repository.getInfo()).data;
-      return info;
+      const status = (await this.repository.getStatus()).data;
+      return status;
     } catch (error) {
       console.error(error);
       return null;
     }
   }
 
-  async editInfo(payload: ExchangeInfoEdit): Promise<void> {
+  async updateStatus(payload: ExchangeInfo): Promise<ExchangeInfo | null> {
     try {
-      await this.repository.editInfo(payload);
+      const status = (await this.repository.updateStatus(payload)).data;
+      return status;
     } catch (error) {
       console.error(error);
+      return null;
+    }
+  }
+
+  async startTrading(): Promise<ExchangeInfo | null> {
+    try {
+      const status = (await this.repository.startTrading()).data;
+      return status;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async stopTrading(): Promise<ExchangeInfo | null> {
+    try {
+      const status = (await this.repository.stopTrading()).data;
+      return status;
+    } catch (error) {
+      console.error(error);
+      return null;
     }
   }
 }

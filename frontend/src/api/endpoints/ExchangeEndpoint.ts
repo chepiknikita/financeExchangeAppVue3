@@ -1,5 +1,5 @@
 import type { AxiosInstance, AxiosResponse } from "axios";
-import type { ExchangeInfoEdit } from "../intarfaces/exchange";
+import type { ExchangeInfo } from "../intarfaces/exchange";
 
 export default class ExchangeEndpoint {
   api: AxiosInstance;
@@ -8,11 +8,19 @@ export default class ExchangeEndpoint {
     this.api = api;
   }
 
-  async getInfo<T>(): Promise<AxiosResponse<T>> {
-    return this.api.get("exchange/info");
+  async getStatus<T>(): Promise<AxiosResponse<T>> {
+    return this.api.get("exchange/status");
   }
 
-  async editInfo<T>(payload: ExchangeInfoEdit): Promise<AxiosResponse<T>> {
-    return this.api.put("exchange/info", payload);
+  async updateStatus<T>(payload: ExchangeInfo): Promise<AxiosResponse<T>> {
+    return this.api.patch("exchange", payload);
+  }
+
+  async startTrading<T>(): Promise<AxiosResponse<T>> {
+    return this.api.patch("exchange/start");
+  }
+
+  async stopTrading<T>(): Promise<AxiosResponse<T>> {
+    return this.api.patch("exchange/stop");
   }
 }

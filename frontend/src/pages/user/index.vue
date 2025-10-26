@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiFactory } from '@/api';
 import type { Asset, UserAsset } from '@/api/intarfaces/asset';
@@ -37,15 +37,20 @@ import type { User } from '@/api/intarfaces/user';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
 import columns from './columns';
 import { formatMoneyAmount } from '@/utilities/helpers';
+import { useSocket } from '@/api/services/SocketService';
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
+
+const { socket } = useSocket();
 
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
 const assets = ref<Asset[]>([]);
 
 onMounted(async () => {
+  socket.assets.connect();
+  socket.exchange.connect();
   user.value = await userService.getById(userId);
   if (user.value) {
     assets.value = user.value.assets?.map((asset: Required<UserAsset>) => {
@@ -55,8 +60,12 @@ onMounted(async () => {
         quantity: asset.quantity,
       };
     }) ?? []
-
   }
+});
+
+onUnmounted(() => {
+  socket.assets.disconnect();
+  socket.exchange.disconnect();
 });
 
 const userProfit = computed(() => 0);

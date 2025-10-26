@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Put, Param } from '@nestjs/common';
+import { Controller, Get, Body, Put, Param, Patch } from '@nestjs/common';
 import { ExchangeService } from './exchange.service';
 import { UpdateExchangeDto } from './dto/update-exchange.dto';
 
@@ -6,16 +6,23 @@ import { UpdateExchangeDto } from './dto/update-exchange.dto';
 export class ExchangeController {
   constructor(private readonly exchangeService: ExchangeService) {}
 
-  @Get('/info')
-  async getInfo() {
-    return await this.exchangeService.getInfo();
+  @Get('status')
+  getStatus() {
+    return this.exchangeService.getExchangeStatus();
   }
 
-  @Put('/info')
-  async updateInfo(
-    @Param('id') id: string,
-    @Body() updateExchangeDto: UpdateExchangeDto,
-  ) {
-    return await this.exchangeService.updateInfo(+id, updateExchangeDto);
+  @Patch()
+  updateStatus(@Body() updateExchangeDto: UpdateExchangeDto) {
+    return this.exchangeService.updateExchangeStatus(updateExchangeDto);
+  }
+
+  @Patch('start')
+  startTrading() {
+    return this.exchangeService.startTrading();
+  }
+
+  @Patch('stop')
+  stopTrading() {
+    return this.exchangeService.stopTrading();
   }
 }
