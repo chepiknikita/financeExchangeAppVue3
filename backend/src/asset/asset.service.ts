@@ -113,41 +113,4 @@ export class AssetService {
       await this.updateAssetPrice(asset.id, parseFloat(newPrice.toFixed(2)));
     }
   }
-
-  // async buyStock(userId: number, assetId: number, quantity: number): Promise<UserAsset> {
-  //   const existing = await this.prisma.userAsset.findFirst({
-  //     where: { userId, assetId },
-  //   });
-
-  //   // Todo: добавить вычет из глобального списка акции
-  //   if (existing) {
-  //     return this.prisma.userAsset.update({
-  //       where: { id: existing.id },
-  //       data: { quantity: existing.quantity + quantity },
-  //     });
-  //   } else {
-  //     return this.prisma.userAsset.create({
-  //       data: { userId, assetId, quantity },
-  //     });
-  //   }
-  // }
-
-  // async sellStock(userId: number, assetId: number, quantity: number): Promise<UserAsset | null> {
-  //   const existing = await this.prisma.userAsset.findFirst({
-  //     where: { userId, assetId },
-  //   });
-
-  //   if (!existing) return null;
-  //   // Todo: добавить количество в глобальном списке акции
-  //   const newQuantity = existing.quantity - quantity;
-  //   if (newQuantity <= 0) {
-  //     await this.prisma.userAsset.delete({ where: { id: existing.id } });
-  //     return null;
-  //   }
-
-  //   return this.prisma.userAsset.update({
-  //     where: { id: existing.id },
-  //     data: { quantity: newQuantity },
-  //   });
-  // }
 }

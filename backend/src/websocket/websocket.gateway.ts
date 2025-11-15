@@ -55,35 +55,35 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     this.webSocketFacade.handleUnsubscribe(client, payload.service, payload.data);
   }
 
-  @SubscribeMessage('stocks:subscribe')
-  handleStocksSubscribe(client: Socket, stockIds: number[]) {
-    this.webSocketFacade.handleSubscribe(client, 'stocks', {
-      type: 'stocks',
-      stockIds,
+  @SubscribeMessage('assets:subscribe')
+  handleAssetsSubscribe(client: Socket, assetIds: number[]) {
+    this.webSocketFacade.handleSubscribe(client, 'assets', {
+      type: 'assets',
+      assetIds,
     });
   }
 
-  @SubscribeMessage('stocks:unsubscribe')
-  handleStocksUnsubscribe(client: Socket, stockIds: number[]) {
-    this.webSocketFacade.handleUnsubscribe(client, 'stocks', {
-      type: 'stocks',
-      stockIds,
+  @SubscribeMessage('assets:unsubscribe')
+  handleAssetsUnsubscribe(client: Socket, assetIds: number[]) {
+    this.webSocketFacade.handleUnsubscribe(client, 'assets', {
+      type: 'assets',
+      assetIds,
     });
   }
 
   @SubscribeMessage('price-history:subscribe')
-  handlePriceHistorySubscribe(client: Socket, stockId: number) {
-    this.webSocketFacade.handleSubscribe(client, 'stocks', {
+  handlePriceHistorySubscribe(client: Socket, assetId: number) {
+    this.webSocketFacade.handleSubscribe(client, 'assets', {
       type: 'price-history',
-      stockIds: [stockId],
+      assetIds: [assetId],
     });
   }
 
   @SubscribeMessage('price-history:unsubscribe')
-  handlePriceHistoryUnsubscribe(client: Socket, stockId: number) {
-    this.webSocketFacade.handleUnsubscribe(client, 'stocks', {
+  handlePriceHistoryUnsubscribe(client: Socket, assetId: number) {
+    this.webSocketFacade.handleUnsubscribe(client, 'assets', {
       type: 'price-history',
-      stockIds: [stockId],
+      assetIds: [assetId],
     });
   }
 

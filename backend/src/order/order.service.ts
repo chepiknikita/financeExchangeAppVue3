@@ -110,7 +110,7 @@ constructor(
   }
 
   private async updateUserAsset(userId: number, assetId: number, quantity: number): Promise<void> {
-    const existingUserStock = await this.prisma.userAsset.findUnique({
+    const existingUserAsset = await this.prisma.userAsset.findUnique({
       where: {
         userId_assetId: {
           userId,
@@ -119,8 +119,8 @@ constructor(
       },
     });
 
-    if (existingUserStock) {
-      const newQuantity = existingUserStock.quantity + quantity;
+    if (existingUserAsset) {
+      const newQuantity = existingUserAsset.quantity + quantity;
       if (newQuantity === 0) {
         await this.prisma.userAsset.delete({
           where: {

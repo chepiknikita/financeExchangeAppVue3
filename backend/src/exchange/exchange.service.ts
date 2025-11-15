@@ -48,7 +48,7 @@ export class ExchangeService {
     const exchange = await this.getExchangeStatus();
 
     if (exchange.isTrading) {
-      await this.assetService.updateStockPrices();
+      await this.assetService.updateAssetPrices();
     }
   }
 }
