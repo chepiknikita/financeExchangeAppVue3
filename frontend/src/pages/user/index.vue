@@ -37,20 +37,19 @@ import type { User } from '@/api/intarfaces/user';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
 import columns from './columns';
 import { formatMoneyAmount } from '@/utilities/helpers';
-import { useSocket } from '@/api/services/SocketService';
+import { useWebSocket } from '@/composables/useWebSocket';
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
 
-const { socket } = useSocket();
+const { subscribe, subscribeToAssets } = useWebSocket();
 
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
 const assets = ref<Asset[]>([]);
 
+
 onMounted(async () => {
-  socket.assets.connect();
-  socket.exchange.connect();
   user.value = await userService.getById(userId);
   if (user.value) {
     assets.value = user.value.assets?.map((asset: Required<UserAsset>) => {
@@ -61,11 +60,6 @@ onMounted(async () => {
       };
     }) ?? []
   }
-});
-
-onUnmounted(() => {
-  socket.assets.disconnect();
-  socket.exchange.disconnect();
 });
 
 const userProfit = computed(() => 0);

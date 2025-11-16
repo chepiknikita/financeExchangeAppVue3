@@ -58,6 +58,7 @@ model UserAsset {
   assetId  Int
   quantity Int   @default(0)
 
+  @@unique([userId, assetId], name: "userId_assetId")
   @@map("user_assets")
 }
 

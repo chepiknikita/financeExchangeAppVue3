@@ -3,7 +3,6 @@ import { Socket } from 'socket.io';
 import { AssetSubscriptionService } from './asset-subscription.service';
 import { ExchangeSubscriptionService } from './exchange-subscription.service';
 import { OrderSubscriptionService } from './order-subscription.service';
-// import { BroadcastService } from './broadcast.service';
 
 @Injectable()
 export class WebSocketFacadeService implements OnModuleInit {
@@ -13,25 +12,21 @@ export class WebSocketFacadeService implements OnModuleInit {
     private assetSubscriptionService: AssetSubscriptionService,
     private exchangeSubscriptionService: ExchangeSubscriptionService,
     private orderSubscriptionService: OrderSubscriptionService,
-    // private broadcastService: BroadcastService, TODO для чего
   ) {}
 
   onModuleInit() {
-    // Register all services
     this.services.set('assets', this.assetSubscriptionService);
     this.services.set('exchange', this.exchangeSubscriptionService);
     this.services.set('orders', this.orderSubscriptionService);
   }
 
   handleConnection(client: Socket): void {
-    // Notify all services about new connection
     this.services.forEach(service => {
       service.handleConnection(client);
     });
   }
 
   handleDisconnect(client: Socket): void {
-    // Notify all services about disconnection
     this.services.forEach(service => {
       service.handleDisconnect(client);
     });
@@ -55,9 +50,8 @@ export class WebSocketFacadeService implements OnModuleInit {
     }
   }
 
-  // Public API for broadcasting - delegate to specific services
-  async broadcastAssetkUpdate(assetId: number, stockData: any): Promise<void> {
-    await this.assetSubscriptionService.broadcastAssetUpdate(assetId, stockData);
+  async broadcastAssetkUpdate(assetId: number, assetData: any): Promise<void> {
+    await this.assetSubscriptionService.broadcastAssetUpdate(assetId, assetData);
   }
 
   async broadcastAssetPriceUpdate(assetId: number, priceData: any): Promise<void> {

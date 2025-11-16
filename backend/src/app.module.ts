@@ -8,6 +8,12 @@ import { OrderModule } from './order/order.module';
 @Module({
   controllers: [],
   providers: [],
-  imports: [PrismaModule, UserModule, AssetModule, ExchangeModule, OrderModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    AssetModule,
+    ExchangeModule,
+    OrderModule,
+  ],
 })
 export class AppModule {}

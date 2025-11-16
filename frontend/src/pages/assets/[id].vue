@@ -51,7 +51,7 @@ const router = useRouter();
 const assetId = router.currentRoute.value.params.id;
 const assetService = ApiFactory.createAssetsService();
 const exchangeService = ApiFactory.createExchangeService();
-const exchangeInfo = ref<ExchangeInfo | null>(null);
+const exchangeStatus = ref<ExchangeInfo | null>(null);
 
 const asset = ref<Asset | null>(null);
 
@@ -59,12 +59,12 @@ const assetProfit = computed(() => 0);
 
 onMounted(async () => {
   asset.value = await assetService.getById(assetId);
-  exchangeInfo.value = (await exchangeService.getInfo())?.[0] ?? null;
+  exchangeStatus.value = await exchangeService.getStatus();
 });
 
 const endTrading = computed(() => {
-  exchangeInfo.value?.end
-  return exchangeInfo.value?.end ? new Date(exchangeInfo.value?.end).toLocaleString() : new Date().toLocaleString()
+  exchangeStatus.value?.end
+  return exchangeStatus.value?.end ? new Date(exchangeStatus.value?.end).toLocaleString() : new Date().toLocaleString()
 });
 
 const onSell = () => {

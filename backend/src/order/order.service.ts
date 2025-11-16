@@ -40,6 +40,8 @@ constructor(
       user: { id: user.id, name: user.name },
       timestamp: new Date(),
     });
+
+    return order;
   }
 
   private async handleBuyOrder(user: any, asset: Asset, quantity: number): Promise<Order> {
@@ -76,7 +78,7 @@ constructor(
       where: {
         userId_assetId: {
           userId: user.id,
-          stockId: asset.id,
+          assetId: asset.id,
         },
       },
     });
@@ -155,7 +157,7 @@ constructor(
   async getUserOrders(userId: number): Promise<Order[]> {
     return this.prisma.order.findMany({
       where: { userId },
-      include: { stock: true },
+      include: { asset: true },
       orderBy: { createdAt: 'desc' },
     });
   }

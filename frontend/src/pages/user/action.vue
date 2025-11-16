@@ -75,7 +75,7 @@ const assetService = ApiFactory.createAssetsService();
 const userService = ApiFactory.createUserService();
 const exchangeService = ApiFactory.createExchangeService();
 
-const exchangeInfo = ref<ExchangeInfo | null>(null);
+const exchangeStatus = ref<ExchangeInfo | null>(null);
 const asset = ref<Asset | null>(null);
 const user = ref<User | null>(null);
 const quantityAssetExits = ref(0);
@@ -85,16 +85,16 @@ const price = ref<number>();
 onMounted(async () => {
   asset.value = await assetService.getById(assetId);
   user.value = await userService.getById(userId);
-  exchangeInfo.value = (await exchangeService.getInfo())?.[0] ?? null;
+  exchangeStatus.value = await exchangeService.getStatus();
   quantityAssetExits.value =
     user.value?.assets?.find((asset) => asset.assetId === assetId)?.quantity ??
     0;
 });
 
 const endTrading = computed(() => {
-  exchangeInfo.value?.end;
-  return exchangeInfo.value?.end
-    ? new Date(exchangeInfo.value?.end).toLocaleString()
+  exchangeStatus.value?.end;
+  return exchangeStatus.value?.end
+    ? new Date(exchangeStatus.value?.end).toLocaleString()
     : new Date().toLocaleString();
 });
 

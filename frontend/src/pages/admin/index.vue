@@ -2,9 +2,9 @@
   <div class="page-wrapper">
     <div class="page-content-title">
       <div class="text-h6">Контроль торгов</div>
-      <div v-if="exchangeInfo" class="text-center growth">
+      <div v-if="exchangeStatus" class="text-center growth">
         <div>Информация</div>
-        <div> Период работы: {{ exchangeInfo.start }} - {{ exchangeInfo.end }}</div>
+        <div> Период работы: {{ exchangeStatus.start }} - {{ exchangeStatus.end }}</div>
       </div>
       <div>
         <v-btn variant="tonal" class="my-2 text-none mx-2">Остановить</v-btn>
@@ -45,7 +45,7 @@ const exchangeService = ApiFactory.createExchangeService();
 
 const users = ref<User[]>([]);
 const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
-const exchangeInfo = ref<ExchangeInfo | null>(null);
+const exchangeStatus = ref<ExchangeInfo | null>(null);
 
 const headers = [
   { title: "Пользователь", key: "name", width: "70%" },
@@ -59,8 +59,8 @@ const headers = [
 
 onMounted(async () => {
   users.value = (await userService.getAll()).filter((v) => v.id !== userId);
-  exchangeInfo.value = (await exchangeService.getInfo())?.[0] ?? null;
-  console.log('test', exchangeInfo.value)
+  exchangeStatus.value = await exchangeService.getStatus();
+  console.log('test', exchangeStatus.value)
 });
 
 const onSelectUser = (event: MouseEvent, row: { item: User }) => {

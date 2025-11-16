@@ -1,7 +1,7 @@
 import type { Order, OrderCreate } from "../intarfaces/order";
 import type OrderRepository from "../repositories/OrderRepository";
 
-export class UserService {
+export class OrderService {
   constructor(private repository: OrderRepository) {}
 
   async getAll(): Promise<Order[]> {

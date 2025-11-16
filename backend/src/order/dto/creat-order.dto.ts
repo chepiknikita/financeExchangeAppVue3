@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, IsPositive } from '@nestjs/class-validator';
-import { OrderType } from '@prisma/client';
+import { OrderType } from 'generated/prisma';
 
 export class CreateOrderDto {
   @IsInt()

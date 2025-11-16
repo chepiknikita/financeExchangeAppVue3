@@ -1,5 +1,5 @@
 import {
-  WebSocketGateway,
+  WebSocketGateway as NestWebSocketGateway,
   WebSocketServer,
   OnGatewayInit,
   OnGatewayConnection,
@@ -11,7 +11,7 @@ import { Logger } from '@nestjs/common';
 import { WebSocketFacadeService } from './services/websocket-facade.service';
 import { BroadcastService } from './services/broadcast.service';
 
-@WebSocketGateway({
+@NestWebSocketGateway({
   cors: {
     origin: '*',
   },
