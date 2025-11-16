@@ -5,6 +5,7 @@ export interface Asset {
   type: AssetType | string;
   price: number;
   quantity: number;
+  availableQuantity: number;
   history?: PriceHistory[];
 }
 

@@ -27,15 +27,16 @@ model User {
 }
 
 model Asset {
-  id         Int            @id @default(autoincrement())
-  ticker     String         @unique
-  name       String
-  type       String
-  price      Float
-  quantity   Int            @default(0)
-  history    PriceHistory[]
-  userAssets UserAsset[]
-  orders     Order[]
+  id                  Int            @id @default(autoincrement())
+  ticker              String         @unique
+  name                String
+  type                String
+  price               Float
+  quantity            Int            @default(0)
+  availableQuantity   Int         @default(0)
+  history             PriceHistory[]
+  userAssets          UserAsset[]
+  orders              Order[]
 
   @@map("assets")
 }

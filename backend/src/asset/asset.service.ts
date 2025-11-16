@@ -54,6 +54,8 @@ export class AssetService {
     assetId: number,
     updatedPrice: number,
   ): Promise<Asset> {
+    this.getEntityById(assetId);
+
     return this.prisma.$transaction(async (tx) => {
       // Обновляем текущую цену
       const updatedAsset = await tx.asset.update({
