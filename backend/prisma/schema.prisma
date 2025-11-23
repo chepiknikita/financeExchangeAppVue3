@@ -27,13 +27,14 @@ model User {
 }
 
 model Asset {
-  id                  Int            @id @default(autoincrement())
-  ticker              String         @unique
+  id                  Int             @id @default(autoincrement())
+  ticker              String          @unique
   name                String
   type                String
   price               Float
-  quantity            Int            @default(0)
-  availableQuantity   Int         @default(0)
+  closingPrice        Float           @default(0)
+  quantity            Int             @default(0)
+  availableQuantity   Int             @default(0)
   history             PriceHistory[]
   userAssets          UserAsset[]
   orders              Order[]
@@ -52,12 +53,13 @@ model PriceHistory {
 }
 
 model UserAsset {
-  id       Int   @id @default(autoincrement())
-  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int
-  asset    Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assetId  Int
-  quantity Int   @default(0)
+  id              Int   @id @default(autoincrement())
+  userId          Int
+  assetId         Int
+  quantity        Int   @default(0)
+  averageBuyPrice Float @default(0)
+  user            User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset           Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@unique([userId, assetId], name: "userId_assetId")
   @@map("user_assets")

@@ -4,8 +4,10 @@ export interface Asset {
   name: string;
   type: string;
   price: number;
+  closingPrice: number;
   quantity: number;
   availableQuantity?: number;
+  profit?: number;
   history?: PriceHistory[];
 }
 
@@ -21,5 +23,12 @@ export interface UserAsset {
   userId: number;
   assetId: number;
   asset: Asset;
+  averageBuyPrice: number;
+  quantity: number;
+}
+
+export interface AssetInfo extends Asset {
+  totalProfit: number;
+  averageBuyPrice: number;
   quantity: number;
 }

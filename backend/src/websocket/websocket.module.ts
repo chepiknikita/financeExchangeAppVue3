@@ -17,9 +17,6 @@ import { SubscriptionManagerService } from './services/subscription-manager.serv
     ExchangeSubscriptionService,
     OrderSubscriptionService,
   ],
-  exports: [
-    WebSocketFacadeService,
-    BroadcastService,
-  ],
+  exports: [WebSocketFacadeService, BroadcastService],
 })
 export class WebSocketModule {}

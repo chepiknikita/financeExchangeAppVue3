@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateOrderDto } from './dto/creat-order.dto';
 import { Order } from './entities/order.entity';
-import { Asset } from 'generated/prisma';
+import { Asset, UserAsset } from 'generated/prisma';
 import { WebSocketFacadeService } from '../websocket/services/websocket-facade.service';
 
 @Injectable()
@@ -33,7 +33,6 @@ export class OrderService {
         ? await this.handleBuyOrder(user, asset, createOrderDto.quantity)
         : await this.handleSellOrder(user, asset, createOrderDto.quantity);
 
-    // Broadcast order creation
     await this.webSocketFacade.broadcastOrderCreated({
       ...order,
       asset,
@@ -79,14 +78,16 @@ export class OrderService {
         data: { balance: { decrement: totalCost } },
       });
 
-      await tx.asset.update({
+      const updatedAsset = await tx.asset.update({
         where: { id: asset.id },
         data: {
           availableQuantity: { decrement: quantity },
         },
       });
 
-      await this.updateUserAsset(tx, user.id, asset.id, quantity);
+      await this.updateUserAsset(tx, user.id, asset.id, quantity, updatedAsset.price, 'BUY');
+      await this.broadcastAssetUpdateAfterOrder(asset.id, updatedAsset);
+
       return order;
     });
   }
@@ -129,12 +130,13 @@ export class OrderService {
         data: { balance: { increment: totalValue } },
       });
 
-      await tx.asset.update({
+      const updatedAsset = await tx.asset.update({
         where: { id: asset.id },
         data: { availableQuantity: { increment: quantity } },
       });
 
-      await this.updateUserAsset(tx, user.id, asset.id, -quantity);
+      await this.updateUserAsset(tx, user.id, asset.id, -quantity, updatedAsset.price, 'SELL');
+      await this.broadcastAssetUpdateAfterOrder(asset.id, updatedAsset);
 
       return order;
     });
@@ -145,8 +147,10 @@ export class OrderService {
     userId: number,
     assetId: number,
     quantity: number,
+    buyPrice: number,
+    status: 'BUY' | 'SELL',
   ): Promise<void> {
-    const existingUserAsset = await tx.userAsset.findUnique({
+    const existingUserAsset: UserAsset = await tx.userAsset.findUnique({
       where: {
         userId_assetId: {
           userId,
@@ -155,7 +159,9 @@ export class OrderService {
       },
     });
 
-    if (existingUserAsset) {  
+    const averageBuyPrice = this.getAverageBuyPrice(existingUserAsset, quantity, buyPrice, status);
+
+    if (existingUserAsset) {
       const newQuantity = existingUserAsset.quantity + quantity;
       if (newQuantity === 0) {
         await tx.userAsset.delete({
@@ -174,7 +180,10 @@ export class OrderService {
               assetId,
             },
           },
-          data: { quantity: newQuantity },
+          data: {
+            quantity: newQuantity,
+            averageBuyPrice,
+          },
         });
       }
     } else if (quantity > 0) {
@@ -183,9 +192,29 @@ export class OrderService {
           userId,
           assetId,
           quantity,
+          averageBuyPrice,
         },
       });
     }
+  }
+
+  private getAverageBuyPrice(userAsset: UserAsset, quantity: number, buyPrice: number, status: 'BUY' | 'SELL'): number {
+    let averageBuyPrice = userAsset.averageBuyPrice;
+
+    if (status === 'BUY') {
+      const currentTotalCost = userAsset.quantity * userAsset.averageBuyPrice;
+      const totalValue = quantity + buyPrice;
+      averageBuyPrice = (currentTotalCost + totalValue) / (userAsset.quantity + quantity);
+    }
+    return averageBuyPrice;
+  }
+
+  private broadcastAssetUpdateAfterOrder = async (assetId: number, asset: Asset) => {
+    await this.webSocketFacade.broadcastAssetUpdate(assetId, {
+      assetId,
+      asset,
+      timestamp: new Date(),
+    });
   }
 
   async getUserOrders(userId: number): Promise<Order[]> {

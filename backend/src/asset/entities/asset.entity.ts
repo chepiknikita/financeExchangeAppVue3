@@ -4,6 +4,7 @@ export interface Asset {
   name: string;
   type: AssetType | string;
   price: number;
+  closingPrice: number;
   quantity: number;
   availableQuantity: number;
   history?: PriceHistory[];
@@ -21,6 +22,7 @@ export interface UserAsset {
   userId: number;
   assetId: number;
   asset?: Asset;
+  averageBuyPrice: number;
   quantity: number;
 }
 

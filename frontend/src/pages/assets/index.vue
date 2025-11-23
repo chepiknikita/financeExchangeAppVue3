@@ -43,14 +43,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
 import { ApiFactory } from "@/api";
 import type { Asset } from "@/api/intarfaces/asset";
 import { useRouter } from "vue-router";
+import userAssets from '@/composables/useAssets';
 
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
+const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
 
 const tab = ref(null);
 const stocks = ref<Asset[]>([]);
@@ -69,10 +71,25 @@ const headers = [
 ];
 
 onMounted(async () => {
-  const assets: Asset[] = await assetService.getAll();
+  await loadAssets();
+  subscribeToAssets();
+});
+
+const loadAssets = async () => {
+  const assets: Asset[] = (await assetService.getAll()).map((v) => {
+    v.profit = +(v.price - v.closingPrice).toFixed(2);
+    return v;
+  });
   stocks.value = assets.filter((v) => v.type === "stock");
   bonds.value = assets.filter((v) => v.type === "bond");
   metals.value = assets.filter((v) => v.type === "metal");
+}
+
+watch(needUpdatedAllAssets, async (v) => {
+  if (v) {
+    await loadAssets();
+    needUpdatedAllAssets.value = false;
+  }
 });
 
 const onSelectAsset = (item: Asset) => {

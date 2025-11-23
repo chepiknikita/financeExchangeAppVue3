@@ -1,11 +1,11 @@
 <template>
   <div class="line-chart border pa-2">
-    <Line :data="data" :options="options" />
+    <Line :data="payload" :options="options" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,10 +14,13 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { data as items, options as config } from './lineChartConfigs'
+import type { PriceHistory } from '@/api/intarfaces/asset';
+import 'chartjs-adapter-date-fns'
+import { ru } from "date-fns/locale";
 
 ChartJS.register(
   CategoryScale,
@@ -26,11 +29,155 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 )
 
-const data = items;
-const options = ref(config)
+const props = withDefaults(
+  defineProps<{
+    priceHistory: PriceHistory[];
+  }>(),
+  {
+    priceHistory: () => [],
+  }
+);
+
+const chartKey = ref(0);
+const xAxisRange = ref<{ min: number; max: number } | null>(null);
+
+watch(() => props.priceHistory, (newData) => {
+  if (newData.length > 0 && !xAxisRange.value) {
+    const timestamps = newData.map(v => new Date(v.timestamp).getTime());
+    const minTime = Math.min(...timestamps);
+    const maxTime = Math.max(...timestamps);
+
+    // Устанавливаем диапазон с запасом (например, +10% от текущего диапазона)
+    const range = maxTime - minTime;
+    xAxisRange.value = {
+      min: minTime - range * 0.1,
+      max: maxTime + range * 0.1
+    };
+  }
+}, { immediate: true });
+
+// Принудительно перерисовываем график при изменении данных
+watch(() => props.priceHistory, () => {
+  nextTick(() => {
+    chartKey.value += 1;
+  });
+}, { deep: true });
+
+const payload = computed(() => {
+  const chartData = props.priceHistory.map((v) => ({
+    x: new Date(v.timestamp).getTime(),
+    y: v.price
+  }));
+
+  return {
+    datasets: [
+      {
+        label: 'Цена',
+        borderColor: '#4f46e5',
+        tension: 0.4,
+        pointBackgroundColor: '#4f46e5',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        data: chartData,
+        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+        fill: false
+      }
+    ]
+  };
+});
+
+const options = computed(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        type: 'time' as const,
+        time: {
+          unit: 'day',
+          displayFormats: { day: 'dd.MM.yyyy', week: 'dd.MM.yyyy' },
+          tooltipFormat: 'dd.MM.yyyy HH:mm',
+        },
+        adapters: {
+          date: {
+            locale: ru
+          }
+        },
+        min: xAxisRange.value?.min,
+        max: xAxisRange.value?.max,
+        ticks: {
+          font: {
+            size: 10,
+          },
+          source: 'data',
+          autoSkip: true,
+          maxTicksLimit: 8,
+        },
+        grid: {
+          color: 'rgba(148, 163, 184, 0.1)',
+        }
+      },
+      y: {
+        beginAtZero: false,
+        position: 'right',
+        grid: {
+          color: 'rgba(148, 163, 184, 0.1)',
+        },
+        ticks: {
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        mode: 'nearest',
+        intersect: false,
+        callbacks: {
+          title: (context) => {
+            const date = new Date(context[0].parsed.x);
+            return date.toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          },
+          label: (context) => {
+            return `Цена: ${context.parsed.y.toFixed(2)}`;
+          }
+        }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    elements: {
+      line: {
+        tension: 0.1
+      }
+    },
+    animation: {
+      duration: 0
+    },
+    transitions: {
+      active: {
+        animation: {
+          duration: 0
+        }
+      }
+    }
+  };
+});
 </script>
 
 <style scoped>

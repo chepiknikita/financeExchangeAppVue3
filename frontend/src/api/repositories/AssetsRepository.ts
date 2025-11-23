@@ -24,8 +24,4 @@ export default class AssetsRepository {
   async getUserPortfolio(userId: number): Promise<AxiosResponse<UserAsset[]>> {
     return this.api.getUserPortfolio<UserAsset[]>(userId);
   }
-
-  async getProfitLoss(userId: number): Promise<AxiosResponse<{ [key: number]: number }>> {
-    return this.api.getProfitLoss<{ [key: number]: number }>(userId);
-  }
 }

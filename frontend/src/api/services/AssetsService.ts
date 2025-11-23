@@ -43,14 +43,4 @@ export class AssetsService {
       return [];
     }
   }
-
-  async calculateProfitLoss(userId: number): Promise<{ [key: number]: number }> {
-    try {
-      const profitLoss = (await this.repository.getProfitLoss(userId)).data;
-      return profitLoss;
-    } catch (error) {
-      console.error(error);
-      return {};
-    }
-  }
 }

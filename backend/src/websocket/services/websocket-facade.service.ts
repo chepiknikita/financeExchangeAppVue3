@@ -21,13 +21,13 @@ export class WebSocketFacadeService implements OnModuleInit {
   }
 
   handleConnection(client: Socket): void {
-    this.services.forEach(service => {
+    this.services.forEach((service) => {
       service.handleConnection(client);
     });
   }
 
   handleDisconnect(client: Socket): void {
-    this.services.forEach(service => {
+    this.services.forEach((service) => {
       service.handleDisconnect(client);
     });
   }
@@ -50,12 +50,15 @@ export class WebSocketFacadeService implements OnModuleInit {
     }
   }
 
-  async broadcastAssetkUpdate(assetId: number, assetData: any): Promise<void> {
-    await this.assetSubscriptionService.broadcastAssetUpdate(assetId, assetData);
+  async broadcastAssetUpdate(assetId: number, priceData: any): Promise<void> {
+    await this.assetSubscriptionService.broadcastAssetUpdate(
+      assetId,
+      priceData,
+    );
   }
 
-  async broadcastAssetPriceUpdate(assetId: number, priceData: any): Promise<void> {
-    await this.assetSubscriptionService.broadcastAssetPriceUpdate(assetId, priceData);
+  async broadcastAssetsUpdate(): Promise<void> {
+    await this.assetSubscriptionService.broadcastAssetsUpdate();
   }
 
   async broadcastExchangeStatus(status: any): Promise<void> {

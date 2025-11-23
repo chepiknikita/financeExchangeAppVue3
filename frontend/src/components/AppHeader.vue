@@ -61,7 +61,7 @@ const additionalItems = [
   }
 ];
 
-const barItmes = computed(() => role === 'user' ? pathsUser : pathsAdmin);
+const barItmes = computed(() => role === 'USER' ? pathsUser : pathsAdmin);
 </script>
 
 <style scoped>
