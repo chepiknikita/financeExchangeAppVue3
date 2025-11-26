@@ -44,10 +44,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
-import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
+import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
 import type { Asset } from "@/api/intarfaces/asset";
-import { useRouter } from "vue-router";
+import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
 import userAssets from '@/composables/useAssets';
 
 const router = useRouter();
@@ -58,7 +58,8 @@ const tab = ref(null);
 const stocks = ref<Asset[]>([]);
 const bonds = ref<Asset[]>([]);
 const metals = ref<Asset[]>([]);
-
+//TODO - loaders
+//TODO - enum AssetType
 const tabs = [
   { name: "Акции", key: "stock" },
   { name: "Облигации", key: "bond" },
@@ -84,7 +85,7 @@ const loadAssets = async () => {
   bonds.value = assets.filter((v) => v.type === "bond");
   metals.value = assets.filter((v) => v.type === "metal");
 }
-
+// TODO - rename - refrashAssets
 watch(needUpdatedAllAssets, async (v) => {
   if (v) {
     await loadAssets();

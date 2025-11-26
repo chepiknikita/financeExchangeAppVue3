@@ -14,5 +14,13 @@ declare module 'vue' {
     LineChart: typeof import('./components/charts/LineChart.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TheAssetActions: typeof import('./components/assets/TheAssetActions.vue')['default']
+    TheAssetChart: typeof import('./components/assets/TheAssetChart.vue')['default']
+    TheAssetDetails: typeof import('./components/assets/TheAssetDetails.vue')['default']
+    TheAssetInfo: typeof import('./components/assets/TheAssetInfo.vue')['default']
+    TheUserAsset: typeof import('./components/assets/TheUserAsset.vue')['default']
+    TheUserAssetInfo: typeof import('./components/user/TheUserAssetInfo.vue')['default']
+    TheUserBalance: typeof import('./components/user/TheUserBalance.vue')['default']
+    TheUserTotalBalance: typeof import('./components/user/TheUserTotalBalance.vue')['default']
   }
 }

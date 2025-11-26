@@ -1,26 +1,12 @@
 <template>
   <div v-if="user" class="page-wrapper">
-    <div class="page-content-title">
-      <div class="text-h6">
-        Баланс
-      </div>
-      <div class="text-h5">
-        {{ getTotalBalace() }}
-      </div>
-      <div
-        class="text-body-1"
-        :class="{ 'growth': +userProfit > 0, 'fall': +userProfit < 0 }"
-      >
-        {{ userProfit }}% (доходность)
-      </div>
-    </div>
+    <the-user-total-balance
+      :user="user"
+      :assets="assets"
+    />
     <div class="page-content-body">
-      <div class="text-body-1 mt-2 mx-4">
-        Активы
-      </div>
-      <div class="mb-2">Доступные средства:
-        <span class="text-h6">{{ formatMoneyAmount(user.balance) }}</span>
-      </div>
+      <div class="text-body-1 mt-2 mx-4">Активы</div>
+      <the-user-balance :balance="+user.balance"/>
       <finance-table
         is-total
         :headers="columns"
@@ -35,15 +21,16 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiFactory } from '@/api';
 import type { Asset, AssetInfo, UserAsset } from '@/api/intarfaces/asset';
 import type { User } from '@/api/intarfaces/user';
+import TheUserTotalBalance from '@/components/user/TheUserTotalBalance.vue';
+import TheUserBalance from '@/components/user/TheUserBalance.vue';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
-import columns from './columns';
-import { formatMoneyAmount } from '@/utilities/helpers';
 import userAssets from '@/composables/useAssets';
+import columns from './columns';
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
@@ -55,11 +42,13 @@ const user = ref<User | null>(null);
 const assets = ref<AssetInfo[]>([]);
 
 onMounted(async () => {
+  //TODO add loader
   await loadUserAssets();
   subscribeToAssets();
 });
 
 const loadUserAssets = async () => {
+  //TODO на then
   user.value = await userService.getById(userId);
   if (user.value) {
     const userAssets = await assetService.getUserPortfolio(userId);
@@ -82,19 +71,7 @@ watch(needUpdatedAllAssets, async (v) => {
   }
 })
 
-const userProfit = computed(() => {
-  return (assets.value.reduce((acc, v) => acc + ((v.totalProfit/(v.price * v.quantity)) * 100), 0)).toFixed(2);
-});
-
 const onSelectAsset = (item: Asset) => {
   router.push(`/assets/${item.id}`);
 };
-const getTotalBalace = () => {
-  if (user.value) {
-    let balance: number = +user.value.balance;
-    balance = balance + (user.value.assets?.reduce((acc: number, val: UserAsset) => acc + (val.asset.price * val.quantity), 0) || 0);
-    return formatMoneyAmount(balance.toFixed(2));
-  }
-  return 0;
-}
 </script>
