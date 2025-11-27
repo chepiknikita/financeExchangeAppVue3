@@ -1,5 +1,12 @@
 <template>
-  <div class="page-content-title">
+  <!-- <v-skeleton-loader
+    v-if="loading"
+    :width="600"
+    type="list-item-three-line"
+  ></v-skeleton-loader> -->
+  <div
+    class="page-content-title"
+  >
     <div class="text-h6">
       Баланс
     </div>

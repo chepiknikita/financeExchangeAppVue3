@@ -5,50 +5,22 @@
         :asset-name="asset ? asset.name : ''"
         :asset-price="assetPrice"
         :asset-profit="+assetProfit"
-        :exchange-status="exchangeStatus?.isTrading"
+        :traiding-status="exchangeStatus?.isTrading"
       />
       <the-user-asset-info
         :balance="user ? +user.balance : 0"
         :available-quantity="asset?.availableQuantity ? asset.availableQuantity : 0"
         :quantity-asset-exits="quantityAssetExits"
-        :result="0"
+        :result="result"
         :trading-end-time="exchangeStatus?.end"
       >
-        <div class="page-content-body font-size-14">
-          <div>
-            <v-text-field
-              v-model="quantity"
-              width="250px"
-              density="compact"
-              hide-spin-buttons
-              type="number"
-              placeholder="Количество"
-              variant="outlined"
-              class="text-none"
-            />
-          </div>
-          <div>
-            <v-text-field
-              v-model="price"
-              width="250px"
-              density="compact"
-              hide-spin-buttons
-              type="number"
-              placeholder="Цена"
-              variant="outlined"
-            />
-          </div>
-          <v-btn
-            variant="tonal"
-            width="250px"
-            color="#ccc"
-            class="text-none my-1 mx-2"
-            :disabled="!(quantity && !exchangeStatus?.isTrading)"
-            @click="onClick"
-          >
-            {{ btnTitile }}
-          </v-btn>
-        </div>
+        <the-user-asset-action
+          v-model:price="price"
+          v-model:quantity="quantity"
+          :status="status"
+          :traiding-status="exchangeStatus?.isTrading"
+          @on-order="createOrder"
+        />
       </the-user-asset-info>
     </div>
   </div>
@@ -62,7 +34,6 @@ import type { Asset } from "@/api/intarfaces/asset";
 import type { ExchangeInfo } from "@/api/intarfaces/exchange";
 import type { OrderCreate } from "@/api/intarfaces/order";
 import type { User } from "@/api/intarfaces/user";
-import TheAssetInfo from "@/components/assets/TheAssetInfo.vue";
 import useExchange from "@/composables/useExchange";
 import userAssets from '@/composables/useAssets';
 
@@ -72,23 +43,22 @@ const exchangeService = ApiFactory.createExchangeService();
 const orderService = ApiFactory.createOrderService();
 
 const route = useRoute();
-const { selectAsset, selectedAssetId, assetPrice } = userAssets();
 const { updatedExchange } = useExchange();
+const { selectAsset, selectedAssetId, assetPrice } = userAssets();
+
 const status = route.query?.mode;
-const btnTitile = status === "SELL" ? "Продать" : "Купить";
 const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
 selectedAssetId.value = typeof route.query?.id === "string" ? +route.query?.id : 0;
 
-const exchangeStatus = ref<ExchangeInfo | null>(null);
-const asset = ref<Asset | null>(null);
 const user = ref<User | null>(null);
+const asset = ref<Asset | null>(null);
+const exchangeStatus = ref<ExchangeInfo | null>(null);
 
 const quantityAssetExits = ref(0);
-const quantity = ref<number>();
+const quantity = ref<string>("");
 const price = ref<number>();
 
 //TODO loader
-
 onMounted(async () => {
   user.value = await userService.getById(userId);
   exchangeStatus.value = await exchangeService.getStatus();
@@ -114,7 +84,13 @@ watch(updatedExchange, (v) => {
   exchangeStatus.value = v;
 });
 
-const onClick = async () => {
+const result = computed(() => {
+  return quantity.value && price.value
+    ? +(price.value * +quantity.value).toFixed(2)
+    : null;
+});
+
+const createOrder = async () => {
   if (user.value && asset.value && quantity.value) {
     const order: OrderCreate  = {
       userId: user.value?.id,

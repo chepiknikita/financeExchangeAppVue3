@@ -20,7 +20,7 @@
       </div>
     </div>
     <slot />
-    <div>
+    <div v-if="result">
       <div class="pt-6 px-4 balance-info">
         <div>Итого: {{ formatMoneyAmount(result) }}</div>
         <div class="d-flex justify-space-between text-disabled">
@@ -42,12 +42,12 @@ const props = withDefaults(
     balance: number;
     availableQuantity: number;
     quantityAssetExits: number;
-    result: number;
+    result: number | null;
     tradingEndTime?: string;
   }>(),
   {
     balance: 0,
-    result: 0,
+    result: null,
   }
 );
 

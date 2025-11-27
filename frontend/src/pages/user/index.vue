@@ -37,14 +37,16 @@ const userService = ApiFactory.createUserService();
 const assetService = ApiFactory.createAssetsService();
 const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
 
+const loading = ref(false);
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
 const assets = ref<AssetInfo[]>([]);
 
 onMounted(async () => {
-  //TODO add loader
+  loading.value = true;
   await loadUserAssets();
   subscribeToAssets();
+  loading.value = false;
 });
 
 const loadUserAssets = async () => {

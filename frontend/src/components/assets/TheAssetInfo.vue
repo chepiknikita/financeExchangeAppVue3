@@ -8,7 +8,7 @@
     </div>
     <div
       class="text-body-1"
-      :class="{ 'growth': assetProfit > 0, 'fall': assetProfit < 0 }"
+      :class="{ 'growth': assetProfit > 0, 'fall': assetProfit < 0, 'blocker': !traidingStatus }"
     >{{ assetProfit }}%
       (доходность)</div>
   </div>
@@ -18,18 +18,18 @@
 import { formatMoneyAmount } from "@/utilities/helpers";
 
 //TODO - добавить лоадеры, когда данные не загрузились
-//TODO - exchangeStatus - убрать цвета доходности, сделать нейтральный серый цвет
+//TODO - traidingStatus - убрать цвета доходности, сделать нейтральный серый цвет
 withDefaults(
   defineProps<{
     assetName: string;
     assetPrice: number;
     assetProfit: number;
-    exchangeStatus: boolean;
+    traidingStatus: boolean | undefined;
   }>(),
   {
     assetPrice: 0,
     assetProfit: 0,
-    exchangeStatus: false,
+    traidingStatus: false,
   }
 );
 </script>

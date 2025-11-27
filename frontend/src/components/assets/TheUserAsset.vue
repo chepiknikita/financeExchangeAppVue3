@@ -1,7 +1,7 @@
 <template>
   <div v-if="!asset">Данных нет</div>
-  <div v-else class="d-flex justify-center">
-    <div>В портфеле</div>
+  <div v-else class="d-flex flex-column wrapper">
+    <div class="text-center">В портфеле</div>
     <div class="border py-2 px-4 rounded-sm ma-2 balance-info">
       <div class="d-flex justify-space-between text-disabled">
         <div>На счете:</div>
@@ -36,4 +36,9 @@ defineProps<{
 }>();
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.wrapper {
+  width: 400px;
+  margin: 0 auto 40px;
+}
+</style>

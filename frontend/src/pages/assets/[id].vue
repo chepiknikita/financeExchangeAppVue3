@@ -7,7 +7,7 @@
       :asset-name="asset.name"
       :asset-price="assetPrice"
       :asset-profit="+assetProfit"
-      :exchange-status="exchangeStatus?.isTrading"
+      :traiding-status="exchangeStatus?.isTrading"
     />
     <the-asset-chart :priceHistory="priceHistory" />
     <the-user-asset :asset="asset"/>

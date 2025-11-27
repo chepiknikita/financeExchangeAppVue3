@@ -1,5 +1,5 @@
 <template>
-  <div class="page-bottom-actions">
+  <div class="asset-actions">
     <div class="d-flex justify-center">
       <v-btn
         variant="tonal"
@@ -25,4 +25,13 @@
 const emit = defineEmits(['sell', 'buy'])
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.asset-actions {
+  width: 100%;
+  position: fixed;
+  left: 0;
+  bottom: 40px;
+  padding: 8px 0;
+  background: #121212;
+}
+</style>
