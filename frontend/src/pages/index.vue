@@ -71,7 +71,7 @@ onMounted(async () => {
   users.value = await userService.getAll();
 });
 
-const onSelectUser = (event: MouseEvent, row: { item: User }) => {
+const onSelectUser = (_: MouseEvent, row: { item: User }) => {
   sessionStorage.setItem('user', btoa(JSON.stringify({ id: row.item.id, role: row.item.role })));
   router.push(row.item.role);
 };

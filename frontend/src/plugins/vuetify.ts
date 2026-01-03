@@ -4,7 +4,7 @@ import "vuetify/styles";
 
 // Composables
 import { createVuetify } from "vuetify";
-import { ru } from 'vuetify/locale'
+import { ru } from "vuetify/locale";
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
@@ -12,7 +12,7 @@ export default createVuetify({
     defaultTheme: "dark",
   },
   locale: {
-    locale: 'ru',
+    locale: "ru",
     messages: { ru },
-  }
+  },
 });

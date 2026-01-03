@@ -27,21 +27,24 @@
           <div class="text-body-1 text-end text-cell">
             {{
               isTotal
-                ? formatMoneyAmount(item.price * item.quantity || 0)
+                ? formatMoneyAmount((item.price * item.quantity || 0).toFixed(2))
                 : formatMoneyAmount(item.price ?? 0)
             }}
             ₽
           </div>
-          <div class="text-body-2 growth text-end text-cell">
+          <div
+            class="text-body-2 text-end text-cell"
+            :class="{ 'growth': (isTotal ? item.totalProfit > 0 : item.profit > 0), 'fall': isTotal ? item.totalProfit < 0 : item.profit < 0}"
+          >
             {{
               isTotal
-                ? formatMoneyAmount(item.profit * item.quantity || 0)
+                ? formatMoneyAmount(item.totalProfit.toFixed(2))
                 : formatMoneyAmount(item.profit ?? 0)
             }}₽ |
             {{
               isTotal
-                ? formatMoneyAmount(item.profit * item.quantity || 0)
-                : formatMoneyAmount(item.profit ?? 0)
+                ? formatMoneyAmount((item.totalProfit/(item.price * item.quantity)*100).toFixed((0)))
+                : formatMoneyAmount(((item.profit ?? 0)/(item.price) * 100).toFixed(0))
             }}%
           </div>
         </div>

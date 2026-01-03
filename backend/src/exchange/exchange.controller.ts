@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Put, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Body, Patch } from '@nestjs/common';
 import { ExchangeService } from './exchange.service';
 import { UpdateExchangeDto } from './dto/update-exchange.dto';
 
@@ -14,15 +14,5 @@ export class ExchangeController {
   @Patch()
   updateStatus(@Body() updateExchangeDto: UpdateExchangeDto) {
     return this.exchangeService.updateExchangeStatus(updateExchangeDto);
-  }
-
-  @Patch('start')
-  startTrading() {
-    return this.exchangeService.startTrading();
-  }
-
-  @Patch('stop')
-  stopTrading() {
-    return this.exchangeService.stopTrading();
   }
 }

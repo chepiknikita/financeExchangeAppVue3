@@ -1,10 +1,10 @@
-import { registerPlugins } from '@/plugins'
-import App from './App.vue'
-import { createApp } from 'vue'
-import './styles/index.scss';
+import { registerPlugins } from "@/plugins";
+import App from "./App.vue";
+import { createApp } from "vue";
+import "./styles/index.scss";
 
-const app = createApp(App)
+const app = createApp(App);
 
-registerPlugins(app)
+registerPlugins(app);
 
-app.mount('#app')
+app.mount("#app");

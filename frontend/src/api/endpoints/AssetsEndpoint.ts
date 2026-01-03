@@ -7,7 +7,7 @@ export default class AssetsEndpoint {
     this.api = api;
   }
 
-  async getAll<T>(): Promise<AxiosResponse<T>>{
+  async getAll<T>(): Promise<AxiosResponse<T>> {
     return this.api.get("assets");
   }
 
@@ -21,9 +21,5 @@ export default class AssetsEndpoint {
 
   async getUserPortfolio<T>(userId: number): Promise<AxiosResponse<T>> {
     return this.api.get(`assets/portfolio/${userId}`);
-  }
-
-  async getProfitLoss<T>(userId: number): Promise<AxiosResponse<T>> {
-    return this.api.get(`assets/profit-loss/${userId}`);
   }
 }

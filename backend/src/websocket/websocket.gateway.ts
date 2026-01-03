@@ -1,5 +1,5 @@
 import {
-  WebSocketGateway,
+  WebSocketGateway as NestWebSocketGateway,
   WebSocketServer,
   OnGatewayInit,
   OnGatewayConnection,
@@ -11,13 +11,16 @@ import { Logger } from '@nestjs/common';
 import { WebSocketFacadeService } from './services/websocket-facade.service';
 import { BroadcastService } from './services/broadcast.service';
 
-@WebSocketGateway({
+@NestWebSocketGateway({
   cors: {
     origin: '*',
   },
   namespace: '/ws',
+  transports: ['websocket', 'polling'],
 })
-export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class WebSocketGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
 
   private logger = new Logger('WebSocketGateway');
@@ -30,9 +33,6 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   afterInit(server: Server) {
     this.logger.log('WebSocket server initialized');
     this.broadcastService.setServer(server);
-    
-    // Start background services
-    this.startBackgroundBroadcasts();
   }
 
   handleConnection(client: Socket) {
@@ -45,63 +45,37 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     this.webSocketFacade.handleDisconnect(client);
   }
 
-  @SubscribeMessage('subscribe')
-  handleSubscribe(client: Socket, payload: { service: string; data: any }) {
-    this.webSocketFacade.handleSubscribe(client, payload.service, payload.data);
-  }
-
-  @SubscribeMessage('unsubscribe')
-  handleUnsubscribe(client: Socket, payload: { service: string; data: any }) {
-    this.webSocketFacade.handleUnsubscribe(client, payload.service, payload.data);
-  }
-
-  @SubscribeMessage('stocks:subscribe')
-  handleStocksSubscribe(client: Socket, stockIds: number[]) {
-    this.webSocketFacade.handleSubscribe(client, 'stocks', {
-      type: 'stocks',
-      stockIds,
+  @SubscribeMessage('asset:subscribe')
+  handleAssetsSubscribe(client: Socket, assetId: number) {
+    this.webSocketFacade.handleSubscribe(client, 'assets', {
+      type: 'asset',
+      assetId,
     });
   }
 
-  @SubscribeMessage('stocks:unsubscribe')
-  handleStocksUnsubscribe(client: Socket, stockIds: number[]) {
-    this.webSocketFacade.handleUnsubscribe(client, 'stocks', {
-      type: 'stocks',
-      stockIds,
+  @SubscribeMessage('asset:unsubscribe')
+  handleAssetsUnsubscribe(client: Socket, assetId: number[]) {
+    this.webSocketFacade.handleUnsubscribe(client, 'assets', {
+      type: 'asset',
+      assetId,
     });
   }
 
-  @SubscribeMessage('price-history:subscribe')
-  handlePriceHistorySubscribe(client: Socket, stockId: number) {
-    this.webSocketFacade.handleSubscribe(client, 'stocks', {
-      type: 'price-history',
-      stockIds: [stockId],
-    });
-  }
-
-  @SubscribeMessage('price-history:unsubscribe')
-  handlePriceHistoryUnsubscribe(client: Socket, stockId: number) {
-    this.webSocketFacade.handleUnsubscribe(client, 'stocks', {
-      type: 'price-history',
-      stockIds: [stockId],
-    });
-  }
-
-  @SubscribeMessage('orders:subscribe-all')
+  @SubscribeMessage('all-orders:subscribe')
   handleOrdersSubscribeAll(client: Socket) {
     this.webSocketFacade.handleSubscribe(client, 'orders', {
       type: 'all-orders',
     });
   }
 
-  @SubscribeMessage('orders:unsubscribe-all')
+  @SubscribeMessage('all-orders:unsubscribe')
   handleOrdersUnsubscribeAll(client: Socket) {
     this.webSocketFacade.handleUnsubscribe(client, 'orders', {
       type: 'all-orders',
     });
   }
 
-  @SubscribeMessage('orders:subscribe-user')
+  @SubscribeMessage('user-orders:subscribe')
   handleOrdersSubscribeUser(client: Socket, userId: number) {
     this.webSocketFacade.handleSubscribe(client, 'orders', {
       type: 'user-orders',
@@ -109,17 +83,11 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     });
   }
 
-  @SubscribeMessage('orders:unsubscribe-user')
+  @SubscribeMessage('user-orders:unsubscribe')
   handleOrdersUnsubscribeUser(client: Socket, userId: number) {
     this.webSocketFacade.handleUnsubscribe(client, 'orders', {
       type: 'user-orders',
       userId,
     });
-  }
-
-  private startBackgroundBroadcasts() {
-    // This would be triggered by external services/events
-    // For example, when stock prices update, orders are created, etc.
-    this.logger.log('Background broadcast services started');
   }
 }

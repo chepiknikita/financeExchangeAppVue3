@@ -1,20 +1,12 @@
 <template>
   <div v-if="user" class="page-wrapper">
-    <div class="page-content-title">
-      <div class="text-h6">
-        Баланс
-      </div>
-      <div class="text-h5">
-        {{ formatMoneyAmount(user.balance) }}
-      </div>
-      <div class="text-body-1 growth">
-        {{ userProfit }}% (доходность)
-      </div>
-    </div>
+    <the-user-total-balance
+      :user="user"
+      :assets="assets"
+    />
     <div class="page-content-body">
-      <div class="text-body-1 my-2 mx-4">
-        Активы
-      </div>
+      <div class="text-body-1 mt-2 mx-4">Активы</div>
+      <the-user-balance :balance="+user.balance"/>
       <finance-table
         is-total
         :headers="columns"
@@ -29,46 +21,57 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ApiFactory } from '@/api';
-import type { Asset, UserAsset } from '@/api/intarfaces/asset';
+import type { Asset, AssetInfo, UserAsset } from '@/api/intarfaces/asset';
 import type { User } from '@/api/intarfaces/user';
+import TheUserTotalBalance from '@/components/user/TheUserTotalBalance.vue';
+import TheUserBalance from '@/components/user/TheUserBalance.vue';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
+import userAssets from '@/composables/useAssets';
 import columns from './columns';
-import { formatMoneyAmount } from '@/utilities/helpers';
-import { useSocket } from '@/api/services/SocketService';
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
+const assetService = ApiFactory.createAssetsService();
+const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
 
-const { socket } = useSocket();
-
+const loading = ref(false);
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
-const assets = ref<Asset[]>([]);
+const assets = ref<AssetInfo[]>([]);
 
 onMounted(async () => {
-  socket.assets.connect();
-  socket.exchange.connect();
+  loading.value = true;
+  await loadUserAssets();
+  subscribeToAssets();
+  loading.value = false;
+});
+
+const loadUserAssets = async () => {
+  //TODO на then
   user.value = await userService.getById(userId);
   if (user.value) {
-    assets.value = user.value.assets?.map((asset: Required<UserAsset>) => {
+    const userAssets = await assetService.getUserPortfolio(userId);
+    assets.value = userAssets?.map((asset: Required<UserAsset>) => {
       return {
         ...asset.asset,
         id: asset.assetId,
         quantity: asset.quantity,
+        averageBuyPrice: asset.averageBuyPrice,
+        totalProfit: (asset.asset.price - asset.averageBuyPrice) * asset.quantity,
       };
-    }) ?? []
+    }) ?? [];
   }
-});
+}
 
-onUnmounted(() => {
-  socket.assets.disconnect();
-  socket.exchange.disconnect();
-});
-
-const userProfit = computed(() => 0);
+watch(needUpdatedAllAssets, async (v) => {
+  if (v) {
+    await loadUserAssets();
+    needUpdatedAllAssets.value = false;
+  }
+})
 
 const onSelectAsset = (item: Asset) => {
   router.push(`/assets/${item.id}`);

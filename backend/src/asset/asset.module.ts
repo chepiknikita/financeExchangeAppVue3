@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
-import AssetGateway from './asset.gateway';
+import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   controllers: [AssetController],
-  providers: [AssetService, AssetGateway],
+  providers: [AssetService],
+  imports: [WebSocketModule],
+  exports: [AssetService],
 })
 export class AssetModule {}

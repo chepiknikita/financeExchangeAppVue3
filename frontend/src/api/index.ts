@@ -9,6 +9,10 @@ import { AssetsService } from "./services/AssetsService";
 import { ExchangeService } from "./services/ExchangeService";
 import ExchangeRepository from "./repositories/ExchangeRepository";
 import ExchangeEndpoint from "./endpoints/ExchangeEndpoint";
+import OrderEndpoint from "./endpoints/OrderEndpoint";
+import OrderRepository from "./repositories/OrderRepository";
+import { OrderService } from "./services/OrderService";
+import { WebSocketService } from "./services/WebSocketService";
 
 const API_URL = import.meta.env.VITE_SERVER_API_URL || "http://localhost:8080";
 
@@ -39,5 +43,15 @@ export class ApiFactory {
       new ExchangeEndpoint(this.apiClient)
     );
     return new ExchangeService(repository);
+  }
+
+  public static createOrderService(): OrderService {
+    this.initialize();
+    const repository = new OrderRepository(new OrderEndpoint(this.apiClient));
+    return new OrderService(repository);
+  }
+
+  public static createWebSocketService(): WebSocketService {
+    return WebSocketService.getInstance();
   }
 }

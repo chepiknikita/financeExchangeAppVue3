@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -15,49 +9,53 @@ datasource db {
 }
 
 model User {
-  id      Int         @id @default(autoincrement())
-  login   String      @unique
-  name    String
-  balance Float       @default(0.0)
-  role    UserRole
-  assets  UserAsset[]
-  orders  Order[]
+  id        Int         @id @default(autoincrement())
+  login     String      @unique
+  name      String
+  balance   Float       @default(0.0)
+  role      UserRole
+  assets    UserAsset[]
+  orders    Order[]
 
   @@map("users")
 }
 
 model Asset {
-  id         Int            @id @default(autoincrement())
-  ticker     String         @unique
-  name       String
-  type       String
-  price      Float
-  quantity   Int            @default(0)
-  history    PriceHistory[]
-  userAssets UserAsset[]
-  orders     Order[]
+  id                  Int             @id @default(autoincrement())
+  ticker              String          @unique
+  name                String
+  type                String
+  price               Float
+  closingPrice        Float           @default(0)
+  quantity            Int             @default(0)
+  availableQuantity   Int             @default(0)
+  history             PriceHistory[]
+  userAssets          UserAsset[]
+  orders              Order[]
 
   @@map("assets")
 }
 
 model PriceHistory {
-  id        Int      @id @default(autoincrement())
-  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assetId   Int
-  price     Float
-  timestamp DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId     Int
+  price       Float
+  timestamp   DateTime @default(now())
 
   @@map("price_history")
 }
 
 model UserAsset {
-  id       Int   @id @default(autoincrement())
-  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int
-  asset    Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assetId  Int
-  quantity Int   @default(0)
+  id                Int   @id @default(autoincrement())
+  userId            Int
+  assetId           Int
+  quantity          Int   @default(0)
+  averageBuyPrice   Float @default(0)
+  user              User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset             Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, assetId], name: "userId_assetId")
   @@map("user_assets")
 }
 
@@ -71,15 +69,15 @@ model Exchange {
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  userId     Int
-  assetId    Int
-  type       OrderType
-  quantity   Int
-  price      Float
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  executedAt DateTime?
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  assetId     Int
+  type        OrderType
+  quantity    Int
+  price       Float
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  executedAt  DateTime?
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)

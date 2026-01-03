@@ -1,11 +1,5 @@
 export interface ExchangeInfo {
-  start: number;
-  end: number;
-  isTraiding: boolean;
+  start: string;
+  end: string;
+  isTrading: boolean;
 }
-
-// export interface ExchangeInfo {
-//   start: number;
-//   end: number;
-//   status: string;
-// }
