@@ -23,24 +23,4 @@ export class ExchangeService {
       return null;
     }
   }
-
-  async startTrading(): Promise<ExchangeInfo | null> {
-    try {
-      const status = (await this.repository.startTrading()).data;
-      return status;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  async stopTrading(): Promise<ExchangeInfo | null> {
-    try {
-      const status = (await this.repository.stopTrading()).data;
-      return status;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
 }

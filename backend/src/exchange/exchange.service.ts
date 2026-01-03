@@ -30,6 +30,7 @@ export class ExchangeService {
     return exchange;
   }
 
+  //TODO valid start and end
   async updateExchangeStatus(updateExchangeDto: UpdateExchangeDto) {
     const exchange = await this.getExchangeStatus();
 
@@ -44,14 +45,6 @@ export class ExchangeService {
 
     await this.webSocketFacade.broadcastExchangeStatus(updatedExchange);
     return updatedExchange;
-  }
-
-  async startTrading() {
-    return this.updateExchangeStatus({ isTrading: true });
-  }
-
-  async stopTrading() {
-    return this.updateExchangeStatus({ isTrading: false });
   }
 
   private async updateClosingPrices(): Promise<void> {
@@ -71,7 +64,7 @@ export class ExchangeService {
     }
   }
 
-  @Cron('*/1 * * * *') // Every minute
+  @Cron('*/1 * * * *')
   async updateStockPrices() {
     const exchange = await this.getExchangeStatus();
     if (exchange.isTrading) {

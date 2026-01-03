@@ -10,7 +10,7 @@
       :traiding-status="exchangeStatus?.isTrading"
     />
     <the-asset-chart :priceHistory="priceHistory" />
-    <the-user-asset :asset="asset"/>
+    <the-user-asset :asset="asset" />
     <the-asset-actions
       @buy="onBuy"
       @sell="onSell"

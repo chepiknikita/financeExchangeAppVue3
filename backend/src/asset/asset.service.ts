@@ -32,12 +32,12 @@ export class AssetService {
   }
 
   async getAssetHistory(assetId: number): Promise<PriceHistory[]> {
-    await this.getEntityById(assetId); // Check if asset exists
+    await this.getEntityById(assetId);
 
     return await this.prisma.priceHistory.findMany({
       where: { assetId },
       orderBy: { timestamp: 'desc' },
-      take: 100, // Last 100 price points
+      take: 100,
     });
   }
 
@@ -54,7 +54,7 @@ export class AssetService {
     assetId: number,
     updatedPrice: number,
   ): Promise<Asset> {
-    this.getEntityById(assetId);
+    await this.getEntityById(assetId);
 
     return this.prisma.$transaction(async (tx) => {
       const updatedAsset = await tx.asset.update({
@@ -87,11 +87,10 @@ export class AssetService {
     if (!exchange?.isTrading) return;
 
     for (const asset of assets) {
-      // Generate random price change between -5% and +5%
       const changePercent = (Math.random() * 10 - 5) / 100;
       const newPrice = Math.max(0.01, asset.price * (1 + changePercent));
 
-      const updatedAsset = await this.updateAssetPrice(asset.id, parseFloat(newPrice.toFixed(2)));
+      await this.updateAssetPrice(asset.id, parseFloat(newPrice.toFixed(2)));
     }
     await this.webSocketFacade.broadcastAssetsUpdate();
   }

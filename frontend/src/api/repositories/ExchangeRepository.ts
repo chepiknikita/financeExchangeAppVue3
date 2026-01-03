@@ -13,15 +13,9 @@ export default class ExchangeRepository {
     return this.api.getStatus<ExchangeInfo>();
   }
 
-  async updateStatus(payload: ExchangeInfo): Promise<AxiosResponse<ExchangeInfo>> {
+  async updateStatus(
+    payload: ExchangeInfo
+  ): Promise<AxiosResponse<ExchangeInfo>> {
     return this.api.updateStatus<ExchangeInfo>(payload);
-  }
-
-  async startTrading(): Promise<AxiosResponse<ExchangeInfo>> {
-    return this.api.startTrading<ExchangeInfo>();
-  }
-
-  async stopTrading(): Promise<AxiosResponse<ExchangeInfo>> {
-    return this.api.stopTrading<ExchangeInfo>();
   }
 }

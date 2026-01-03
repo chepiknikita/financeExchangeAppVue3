@@ -29,7 +29,6 @@ export class SubscriptionManagerService implements ISubscriptionManager {
     if (channelSubscriptions) {
       channelSubscriptions.delete(clientId);
 
-      // Clean up empty channels
       if (channelSubscriptions.size === 0) {
         this.subscriptions.delete(channel);
       }

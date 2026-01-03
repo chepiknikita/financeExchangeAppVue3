@@ -24,7 +24,7 @@ export default function userAssets() {
   const subscribeToAssets = () => {
     subscribe(null, null, "assets-update", (data) => {
       console.log("Прослушивание канала - assets-update", data);
-      if (data?.type === 'assets-update') {
+      if (data?.type === "assets-update") {
         needUpdatedAllAssets.value = true;
       }
     });

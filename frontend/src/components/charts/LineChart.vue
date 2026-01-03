@@ -51,7 +51,6 @@ watch(() => props.priceHistory, (newData) => {
     const minTime = Math.min(...timestamps);
     const maxTime = Math.max(...timestamps);
 
-    // Устанавливаем диапазон с запасом (например, +10% от текущего диапазона)
     const range = maxTime - minTime;
     xAxisRange.value = {
       min: minTime - range * 0.1,
@@ -60,7 +59,6 @@ watch(() => props.priceHistory, (newData) => {
   }
 }, { immediate: true });
 
-// Принудительно перерисовываем график при изменении данных
 watch(() => props.priceHistory, () => {
   nextTick(() => {
     chartKey.value += 1;

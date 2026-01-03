@@ -1,4 +1,4 @@
-import type { User, UserInfoEdit } from "../intarfaces/user";
+import type { User } from "../intarfaces/user";
 import type UserRepository from "../repositories/UserRepository";
 
 export class UserService {
@@ -21,14 +21,6 @@ export class UserService {
     } catch (error) {
       console.error(error);
       return null;
-    }
-  }
-
-  async update(id: number, payload: UserInfoEdit): Promise<void> {
-    try {
-      await this.repository.update(id, payload);
-    } catch (error) {
-      console.error(error);
     }
   }
 }

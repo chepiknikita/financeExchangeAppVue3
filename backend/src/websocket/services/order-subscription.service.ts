@@ -79,14 +79,12 @@ export class OrderSubscriptionService implements IWebSocketService {
   }
 
   async broadcastOrderCreated(order: any): Promise<void> {
-    // Broadcast to all subscribers of all orders
     this.broadcastService.broadcastToChannel(
       this.CHANNEL_ORDERS_ALL,
       'order-created',
       order,
     );
 
-    // Broadcast to specific user if they are subscribed
     this.broadcastService.broadcastToChannel(
       `${this.CHANNEL_ORDERS_USER}:${order.userId}`,
       'order-created',

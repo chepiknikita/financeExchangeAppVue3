@@ -7,7 +7,6 @@ export default function useExchange() {
   const updatedExchange = ref<ExchangeInfo | null>(null);
 
   subscribe(null, null, "exchange-status", (data) => {
-    console.log("exchange-status", data);
     if (data?.spec?.args?.data) {
       updatedExchange.value = data.spec.args.data;
     }

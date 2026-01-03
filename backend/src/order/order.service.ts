@@ -19,10 +19,9 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    // Check if trading is allowed
     const exchange = await this.exchangeService.getExchangeStatus();
     if (!exchange.isTrading) {
-      throw new BadRequestException('Trading is currently suspended');
+      throw new BadRequestException('Торги остановлены');
     }
 
     const user = await this.userService.getById(createOrderDto.userId);
@@ -51,12 +50,12 @@ export class OrderService {
     const totalCost = asset.price * quantity;
 
     if (user.balance < totalCost) {
-      throw new BadRequestException('Insufficient funds');
+      throw new BadRequestException('Недостаточно средств');
     }
 
     if (asset.availableQuantity < quantity) {
       throw new BadRequestException(
-        `Not enough shares available. Only ${asset.availableQuantity} shares left`,
+        `Недопустимое количество для покупки. Осталось всего: ${asset.availableQuantity}`,
       );
     }
 
@@ -107,7 +106,7 @@ export class OrderService {
     });
 
     if (!userAsset || userAsset.quantity < quantity) {
-      throw new BadRequestException('Insufficient asset quantity');
+      throw new BadRequestException('Недостаточное количество активов');
     }
 
     const totalValue = asset.price * quantity;

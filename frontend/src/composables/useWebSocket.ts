@@ -28,7 +28,6 @@ export function useWebSocket() {
     unsubscribeCallbacks.length = 0;
   };
 
-  // Автоматическая отписка при размонтировании компонента
   onUnmounted(() => {
     unsubscribeAll();
   });

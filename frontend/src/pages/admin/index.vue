@@ -11,21 +11,48 @@
         </div>
       </div>
       <div>
-        <v-btn variant="tonal" class="my-2 text-none mx-2" @click="onEdit">Редактировать</v-btn>
+        <v-btn
+          variant="tonal"
+          class="my-2 text-none mx-2"
+          @click="onEdit"
+        >
+          Редактировать
+        </v-btn>
       </div>
-      <v-dialog v-model="dialog" max-width="500">
-        <v-confirm-edit ref="confirm" v-model="model" ok-text="Применить" @save="save" @cancel="dialog = false">
+      <v-dialog
+        v-model="dialog"
+        max-width="500"
+      >
+        <v-confirm-edit
+          ref="confirm"
+          v-model="model"
+          ok-text="Применить"
+          @save="save"
+          @cancel="dialog = false"
+        >
           <template v-slot:default="{ model: proxyModel, actions }">
             <v-card title="Редактирование данных биржы">
               <v-card-text>
-                <v-switch v-model="proxyModel.value.isTrading" label="Статус биржы" hide-details></v-switch>
-
-                <VueDatePicker v-model="proxyModel.value.date" range locale="ru" format="dd.MM.yyyy HH:mm"
-                  select-text="Выбрать" cancel-text="Отмена" :dark="true" :format-locale="ru" :teleport="true" />
+                <v-switch
+                  v-model="proxyModel.value.isTrading"
+                  label="Статус биржы"
+                  hide-details
+                />
+                <VueDatePicker
+                  v-model="proxyModel.value.date"
+                  range
+                  locale="ru"
+                  format="dd.MM.yyyy HH:mm"
+                  select-text="Выбрать"
+                  cancel-text="Отмена"
+                  :dark="true"
+                  :format-locale="ru"
+                  :teleport="true"
+                />
               </v-card-text>
               <template v-slot:actions>
-                <v-spacer></v-spacer>
-                <component :is="actions"></component>
+                <v-spacer />
+                <component :is="actions" />
               </template>
             </v-card>
           </template>
@@ -35,8 +62,18 @@
     <div class="page-content-body">
       <div class="text-body-1 my-2 mx-4">Список пользователей</div>
       <div :style="{ width: '500px' }">
-        <v-data-table :items="users" :headers="headers" density="compact" item-value="name" hide-default-footer
-          hide-default-header hover select-strategy="single" return-object @click:row="onSelectUser" />
+        <v-data-table
+          :items="users"
+          :headers="headers"
+          density="compact"
+          item-value="name"
+          hide-default-footer
+          hide-default-header
+          hover
+          select-strategy="single"
+          return-object
+          @click:row="onSelectUser"
+        />
       </div>
     </div>
   </div>
@@ -44,10 +81,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import type { User } from "@/api/intarfaces/user";
+import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
 import { formatMoneyAmount } from "@/utilities/helpers";
-import { useRouter } from "vue-router";
+import type { User } from "@/api/intarfaces/user";
 import type { ExchangeInfo } from "@/api/intarfaces/exchange";
 import { ru } from 'date-fns/locale';
 

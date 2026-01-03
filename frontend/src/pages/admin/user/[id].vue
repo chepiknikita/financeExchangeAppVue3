@@ -1,5 +1,8 @@
 <template>
-  <div v-if="user" class="page-wrapper">
+  <div
+    v-if="user"
+    class="page-wrapper"
+  >
     <div class="page-content-title">
       <div class="border rounded-sm py-2 px-4 text-center">
         <div>{{ user.name }}</div>
@@ -10,7 +13,11 @@
     <div class="page-content-body">
       <div class="text-h6">Состав портфеля</div>
       <div class="text-body-1 my-2 mx-4">Активы</div>
-      <finance-table is-total :headers="columns" :items="assets" />
+      <finance-table
+        is-total
+        :headers="columns"
+        :items="assets"
+      />
     </div>
   </div>
   <div v-else class="text-center my-2">Такого пользователя не существует.</div>

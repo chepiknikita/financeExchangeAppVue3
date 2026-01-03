@@ -7,7 +7,7 @@ export default class AssetsEndpoint {
     this.api = api;
   }
 
-  async getAll<T>(): Promise<AxiosResponse<T>>{
+  async getAll<T>(): Promise<AxiosResponse<T>> {
     return this.api.get("assets");
   }
 
