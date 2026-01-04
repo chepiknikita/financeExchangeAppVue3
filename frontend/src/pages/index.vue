@@ -9,7 +9,19 @@
       <div class="text-body-1 my-2 mx-4">
         Выберите пользователя для входа
       </div>
-      <div class="table-user">
+      <div
+        v-if="loading"
+        class="d-flex justify-center"
+      >
+        <v-skeleton-loader
+          type="image"
+          :width="600"
+        />
+      </div>
+      <div
+        v-else
+        class="table-user"
+      >
         <v-data-table
           :items="users"
           :headers="headers"
@@ -45,6 +57,7 @@ definePage({
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
+const loading = ref(true);
 
 const headers = [
   {
@@ -60,7 +73,7 @@ const headers = [
   },
   {
     title: 'Баланс',
-    key: 'balance',
+    key: 'currentBalance',
     width: '30%',
     align: 'end',
   },
@@ -69,6 +82,7 @@ const users = ref<User[]>([]);
 
 onMounted(async () => {
   users.value = await userService.getAll();
+  loading.value = false;
 });
 
 const onSelectUser = (_: MouseEvent, row: { item: User }) => {

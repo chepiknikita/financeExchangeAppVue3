@@ -5,7 +5,6 @@ export class Order {
   type: string;
   quantity: number;
   price: number;
-  status: string;
   createdAt: Date;
   executedAt: Date | null;
 }

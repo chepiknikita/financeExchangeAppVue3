@@ -1,6 +1,25 @@
 <template>
   <div
-    v-if="asset"
+    v-if="loading"
+    class="d-flex justify-center align-center flex-column mt-8"
+  >
+    <v-skeleton-loader
+      type="list-item-three-line"
+      :width="300"
+      class="my-2"
+    />
+    <v-skeleton-loader
+      type="image"
+      :width="600"
+    />
+    <v-skeleton-loader
+      type="list-item-three-line"
+      :width="400"
+      class="my-2"
+    />
+  </div>
+  <div
+    v-else-if="asset"
     class="page-wrapper overflow-hidden position-relative"
   >
     <the-asset-info
@@ -36,6 +55,7 @@ const assetService = ApiFactory.createAssetsService();
 const exchangeService = ApiFactory.createExchangeService();
 const { updatedExchange } = useExchange();
 const { selectAsset, selectedAssetId, assetPrice, history } = userAssets();
+const loading = ref(true);
 
 selectedAssetId.value = router.currentRoute.value.params.id;
 const exchangeStatus = ref<ExchangeInfo | null>(null);
@@ -57,6 +77,7 @@ onMounted(async () => {
     assetPrice.value = asset.value?.price ?? 0;
     selectAsset(selectedAssetId.value);
   }
+  loading.value = false;
 });
 
 watch(updatedExchange, (v) => {

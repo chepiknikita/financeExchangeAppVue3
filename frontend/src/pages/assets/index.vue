@@ -14,19 +14,18 @@
         class="text-none text-body-1"
       />
     </v-tabs>
-    <div class="page-wrapper">
+    <div v-if="loading" class="d-flex justify-center my-8">
+      <v-skeleton-loader
+        type="image"
+        :width="600"
+      />
+    </div>
+    <div v-else class="page-wrapper">
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="stock" class="my-0 mx-auto">
           <finance-table
             :headers="headers"
             :items="stocks"
-            @click:row="onSelectAsset"
-          />
-        </v-tabs-window-item>
-        <v-tabs-window-item value="bond" class="my-0 mx-auto">
-          <finance-table
-            :headers="headers"
-            :items="bonds"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -54,15 +53,13 @@ const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
 const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
 
+const loading = ref(true);
 const tab = ref(null);
 const stocks = ref<Asset[]>([]);
-const bonds = ref<Asset[]>([]);
 const metals = ref<Asset[]>([]);
-//TODO - loaders
 //TODO - enum AssetType
 const tabs = [
   { name: "Акции", key: "stock" },
-  { name: "Облигации", key: "bond" },
   { name: "Металлы", key: "metal" },
 ];
 
@@ -74,6 +71,7 @@ const headers = [
 onMounted(async () => {
   await loadAssets();
   subscribeToAssets();
+  loading.value = false;
 });
 
 const loadAssets = async () => {
@@ -82,7 +80,6 @@ const loadAssets = async () => {
     return v;
   });
   stocks.value = assets.filter((v) => v.type === "stock");
-  bonds.value = assets.filter((v) => v.type === "bond");
   metals.value = assets.filter((v) => v.type === "metal");
 }
 // TODO - rename - refrashAssets

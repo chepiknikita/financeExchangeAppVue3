@@ -1,6 +1,31 @@
 <template>
   <div class="page-wrapper h-100 overflow-hidden">
-    <div class="page-content-title">
+    <div
+      v-if="loading"
+      class="d-flex justify-center align-center flex-column mt-8"
+    >
+      <v-skeleton-loader
+        type="list-item-three-line"
+        :width="200"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="list-item-three-line"
+        :width="300"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="heading"
+        :width="150"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="heading"
+        :width="150"
+        class="my-2"
+      />
+    </div>
+    <div v-else class="page-content-title">
       <the-asset-info
         :asset-name="asset ? asset.name : ''"
         :asset-price="assetPrice"
@@ -8,7 +33,7 @@
         :traiding-status="exchangeStatus?.isTrading"
       />
       <the-user-asset-info
-        :balance="user ? +user.balance : 0"
+        :balance="user ? +user.currentBalance : 0"
         :available-quantity="asset?.availableQuantity ? asset.availableQuantity : 0"
         :quantity-asset-exits="quantityAssetExits"
         :result="result"
@@ -42,6 +67,8 @@ const userService = ApiFactory.createUserService();
 const exchangeService = ApiFactory.createExchangeService();
 const orderService = ApiFactory.createOrderService();
 
+const loading = ref(true);
+
 const route = useRoute();
 const { updatedExchange } = useExchange();
 const { selectAsset, selectedAssetId, assetPrice } = userAssets();
@@ -71,6 +98,7 @@ onMounted(async () => {
     user.value?.assets?.find((asset) => asset.assetId === selectedAssetId.value)?.quantity ??
     0;
   price.value = asset.value?.price;
+  loading.value = false;
 });
 
 const assetProfit = computed(() => {

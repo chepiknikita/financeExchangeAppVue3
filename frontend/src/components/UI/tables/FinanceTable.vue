@@ -10,6 +10,7 @@
       hover
       select-strategy="single"
       return-object
+      no-data-text="Данных нет"
       @click:row="onSelectRow"
     >
       <template v-slot:item.name="{ item }">
@@ -24,7 +25,10 @@
       </template>
       <template v-slot:item.price="{ item }">
         <div class="ma-2">
-          <div class="text-body-1 text-end text-cell">
+          <div
+            class="text-body-1 text-end text-cell"
+            :class="{ 'blocker': !traidingStatus }"
+          >
             {{
               isTotal
                 ? formatMoneyAmount((item.price * item.quantity || 0).toFixed(2))
@@ -34,7 +38,7 @@
           </div>
           <div
             class="text-body-2 text-end text-cell"
-            :class="{ 'growth': (isTotal ? item.totalProfit > 0 : item.profit > 0), 'fall': isTotal ? item.totalProfit < 0 : item.profit < 0}"
+            :class="{ 'growth': (isTotal ? item.totalProfit > 0 : item.profit > 0), 'fall': isTotal ? item.totalProfit < 0 : item.profit < 0, 'blocker': !traidingStatus}"
           >
             {{
               isTotal
@@ -62,9 +66,11 @@ withDefaults(
     items: Asset[];
     headers: unknown[];
     isTotal?: boolean;
+    traidingStatus?: boolean;
   }>(),
   {
     isTotal: false,
+    traidingStatus: false,
   }
 );
 

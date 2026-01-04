@@ -1,9 +1,4 @@
 <template>
-  <!-- <v-skeleton-loader
-    v-if="loading"
-    :width="600"
-    type="list-item-three-line"
-  ></v-skeleton-loader> -->
   <div
     class="page-content-title"
   >
@@ -40,12 +35,17 @@ const props = withDefaults(
 );
 
 const userProfit = computed(() => {
-  return +(props.assets.reduce((acc, v) => acc + ((v.totalProfit/(v.price * v.quantity)) * 100), 0)).toFixed(2);
+  if (props.user) {
+    const totalBalance = props.assets.reduce((acc, v) => acc + (v.price * v.quantity), 0) + props.user.currentBalance;
+    const profit = totalBalance - props.user.initialBalance;
+    return +((profit/props.user.initialBalance) * 100).toFixed(2);
+  }
+  return 0;
 });
 
 const getTotalBalace = () => {
   if (props.user) {
-    let balance: number = +props.user.balance;
+    let balance: number = +props.user.currentBalance;
     balance = balance + (props.assets.reduce((acc: number, val: AssetInfo) => acc + (val.price * val.quantity), 0) || 0);
     return formatMoneyAmount(balance.toFixed(2));
   }

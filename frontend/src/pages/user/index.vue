@@ -1,12 +1,21 @@
 <template>
-  <div v-if="user" class="page-wrapper">
+  <div v-if="loading" class="d-flex justify-center align-center mt-8">
+    <v-skeleton-loader
+      type="heading, list-item-three-line"
+      :width="600"
+    />
+  </div>
+  <div
+    v-else-if="user"
+    class="page-wrapper"
+  >
     <the-user-total-balance
       :user="user"
       :assets="assets"
     />
     <div class="page-content-body">
       <div class="text-body-1 mt-2 mx-4">Активы</div>
-      <the-user-balance :balance="+user.balance"/>
+      <the-user-balance :balance="+user.currentBalance"/>
       <finance-table
         is-total
         :headers="columns"
@@ -37,13 +46,12 @@ const userService = ApiFactory.createUserService();
 const assetService = ApiFactory.createAssetsService();
 const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
 
-const loading = ref(false);
+const loading = ref(true);
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
 const assets = ref<AssetInfo[]>([]);
 
 onMounted(async () => {
-  loading.value = true;
   await loadUserAssets();
   subscribeToAssets();
   loading.value = false;

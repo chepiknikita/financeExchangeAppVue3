@@ -5,7 +5,8 @@ export interface User {
   id: number;
   login: string;
   name: string;
-  balance: string;
+  initialBalance: number;
+  currentBalance: number;
   role: string;
   assets?: UserAsset[];
   orders?: Order[];

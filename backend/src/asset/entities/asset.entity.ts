@@ -28,6 +28,5 @@ export interface UserAsset {
 
 enum AssetType {
   Stock = 'stock',
-  Bond = 'bond',
   Metal = 'metal',
 }

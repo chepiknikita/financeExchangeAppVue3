@@ -30,11 +30,11 @@ export class ExchangeService {
     return exchange;
   }
 
-  //TODO valid start and end
   async updateExchangeStatus(updateExchangeDto: UpdateExchangeDto) {
+    updateExchangeDto.validateDates();
     const exchange = await this.getExchangeStatus();
 
-    const updatedExchange = this.prisma.exchange.update({
+    const updatedExchange = await this.prisma.exchange.update({
       where: { id: exchange.id },
       data: updateExchangeDto,
     });
@@ -65,7 +65,7 @@ export class ExchangeService {
   }
 
   @Cron('*/1 * * * *')
-  async updateStockPrices() {
+  async updateAssetPrices() {
     const exchange = await this.getExchangeStatus();
     if (exchange.isTrading) {
       await this.assetService.updateAssetPrices();

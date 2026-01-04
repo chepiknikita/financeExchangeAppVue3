@@ -6,7 +6,6 @@ export interface Order {
   type: string;
   quantity: number;
   price: number;
-  status: string;
   createdAt: string;
   asset: Asset;
   user: {

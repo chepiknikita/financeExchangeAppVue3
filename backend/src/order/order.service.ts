@@ -49,7 +49,7 @@ export class OrderService {
   ): Promise<Order> {
     const totalCost = asset.price * quantity;
 
-    if (user.balance < totalCost) {
+    if (user.currentBalance < totalCost) {
       throw new BadRequestException('Недостаточно средств');
     }
 
@@ -67,14 +67,13 @@ export class OrderService {
           type: 'BUY',
           quantity,
           price: asset.price,
-          status: 'EXECUTED',
           executedAt: new Date(),
         },
       });
 
       await tx.user.update({
         where: { id: user.id },
-        data: { balance: { decrement: totalCost } },
+        data: { currentBalance: { decrement: totalCost } },
       });
 
       const updatedAsset = await tx.asset.update({
@@ -119,14 +118,13 @@ export class OrderService {
           type: 'SELL',
           quantity,
           price: asset.price,
-          status: 'EXECUTED',
           executedAt: new Date(),
         },
       });
 
       await tx.user.update({
         where: { id: user.id },
-        data: { balance: { increment: totalValue } },
+        data: { currentBalance: { increment: totalValue } },
       });
 
       const updatedAsset = await tx.asset.update({

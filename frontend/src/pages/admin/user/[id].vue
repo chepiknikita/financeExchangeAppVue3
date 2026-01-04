@@ -1,12 +1,32 @@
 <template>
   <div
-    v-if="user"
+    v-if="loading"
+    class="d-flex justify-center align-center flex-column mt-2"
+  >
+    <v-skeleton-loader
+      type="list-item-three-line"
+      :width="300"
+      class="my-2"
+    />
+    <v-skeleton-loader
+      type="heading"
+      :width="300"
+      class="my-2"
+    />
+    <v-skeleton-loader
+      type="image"
+      :width="500"
+      class="my-2"
+    />
+  </div>
+  <div
+    v-else-if="user"
     class="page-wrapper"
   >
     <div class="page-content-title">
       <div class="border rounded-sm py-2 px-4 text-center">
         <div>{{ user.name }}</div>
-        <div>Баланс: {{ formatMoneyAmount(user.balance) }}</div>
+        <div>Баланс: {{ formatMoneyAmount(user.currentBalance) }}</div>
         <div class="growth">Доходность: {{ userProfit }}%</div>
       </div>
     </div>
@@ -36,6 +56,8 @@ import columns from "@/pages/user/columns";
 const route = useRoute();
 const userService = ApiFactory.createUserService();
 
+const loading = ref(true);
+
 const userId = route.params?.id;
 const user = ref<User | null>(null);
 const assets = ref<Asset[]>([]);
@@ -52,6 +74,7 @@ onMounted(async () => {
         };
       }) ?? [];
   }
+  loading.value = false;
 });
 
 const userProfit = computed(() => 0);

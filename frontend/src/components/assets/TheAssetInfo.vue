@@ -17,8 +17,6 @@
 <script setup lang="ts">
 import { formatMoneyAmount } from "@/utilities/helpers";
 
-//TODO - добавить лоадеры, когда данные не загрузились
-//TODO - traidingStatus - убрать цвета доходности, сделать нейтральный серый цвет
 withDefaults(
   defineProps<{
     assetName: string;

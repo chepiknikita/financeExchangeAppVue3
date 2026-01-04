@@ -9,78 +9,77 @@ datasource db {
 }
 
 model User {
-  id        Int         @id @default(autoincrement())
-  login     String      @unique
-  name      String
-  balance   Float       @default(0.0)
-  role      UserRole
-  assets    UserAsset[]
-  orders    Order[]
+  id             Int         @id @default(autoincrement())
+  login          String      @unique
+  name           String
+  role           UserRole
+  currentBalance Float       @default(0.0)
+  initialBalance Float       @default(0.0)
+  orders         Order[]
+  assets         UserAsset[]
 
   @@map("users")
 }
 
 model Asset {
-  id                  Int             @id @default(autoincrement())
-  ticker              String          @unique
-  name                String
-  type                String
-  price               Float
-  closingPrice        Float           @default(0)
-  quantity            Int             @default(0)
-  availableQuantity   Int             @default(0)
-  history             PriceHistory[]
-  userAssets          UserAsset[]
-  orders              Order[]
+  id                Int            @id @default(autoincrement())
+  ticker            String         @unique
+  name              String
+  type              String
+  price             Float
+  quantity          Int            @default(0)
+  availableQuantity Int            @default(0)
+  closingPrice      Float          @default(0)
+  orders            Order[]
+  history           PriceHistory[]
+  userAssets        UserAsset[]
 
   @@map("assets")
 }
 
 model PriceHistory {
-  id          Int      @id @default(autoincrement())
-  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assetId     Int
-  price       Float
-  timestamp   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  assetId   Int
+  price     Float
+  timestamp DateTime @default(now())
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@map("price_history")
 }
 
 model UserAsset {
-  id                Int   @id @default(autoincrement())
-  userId            Int
-  assetId           Int
-  quantity          Int   @default(0)
-  averageBuyPrice   Float @default(0)
-  user              User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  asset             Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  id              Int   @id @default(autoincrement())
+  userId          Int
+  assetId         Int
+  quantity        Int   @default(0)
+  averageBuyPrice Float @default(0)
+  asset           Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  user            User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, assetId], name: "userId_assetId")
   @@map("user_assets")
 }
 
 model Exchange {
-  id            Int       @id @default(autoincrement())
-  start         DateTime
-  end           DateTime?
-  isTrading     Boolean   @default(false)
+  id        Int       @id @default(autoincrement())
+  start     DateTime
+  end       DateTime?
+  isTrading Boolean   @default(false)
 
   @@map("exchange")
 }
 
 model Order {
-  id          Int         @id @default(autoincrement())
-  userId      Int
-  assetId     Int
-  type        OrderType
-  quantity    Int
-  price       Float
-  status      OrderStatus @default(PENDING)
-  createdAt   DateTime    @default(now())
-  executedAt  DateTime?
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  assetId    Int
+  type       OrderType
+  quantity   Int
+  price      Float
+  createdAt  DateTime  @default(now())
+  executedAt DateTime?
+  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("orders")
 }
@@ -93,10 +92,4 @@ enum UserRole {
 enum OrderType {
   BUY
   SELL
-}
-
-enum OrderStatus {
-  PENDING
-  EXECUTED
-  CANCELLED
 }
