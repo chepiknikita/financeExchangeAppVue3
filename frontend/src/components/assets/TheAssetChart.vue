@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import type { PriceHistory } from "@/api/intarfaces/asset";
 import LineChart from "@/components/charts/LineChart.vue";
+import type { PriceHistory } from "@/entities/Asset";
 
 withDefaults(
   defineProps<{

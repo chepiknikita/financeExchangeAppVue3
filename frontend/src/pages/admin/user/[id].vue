@@ -36,7 +36,7 @@
       <finance-table
         is-total
         :headers="columns"
-        :items="assets"
+        :items="user.mappedAssets"
       />
     </div>
   </div>
@@ -47,33 +47,21 @@
 import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { ApiFactory } from "@/api";
-import type { Asset, UserAsset } from "@/api/intarfaces/asset";
-import type { User } from "@/api/intarfaces/user";
-import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
 import { formatMoneyAmount } from "@/utilities/helpers";
+import { User } from "@/entities/User";
+import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
 import columns from "@/pages/user/columns";
 
+const loading = ref(true);
 const route = useRoute();
 const userService = ApiFactory.createUserService();
 
-const loading = ref(true);
-
 const userId = route.params?.id;
 const user = ref<User | null>(null);
-const assets = ref<Asset[]>([]);
 
 onMounted(async () => {
-  user.value = await userService.getById(userId);
-  if (user.value) {
-    assets.value =
-      user.value.assets?.map((asset: Required<UserAsset>) => {
-        return {
-          ...asset.asset,
-          id: asset.assetId,
-          quantity: asset.quantity,
-        };
-      }) ?? [];
-  }
+  const loadedUser = await userService.getById(userId);
+  user.value = loadedUser ? new User(loadedUser) : null;
   loading.value = false;
 });
 

@@ -1,25 +1,27 @@
-import type { Asset, PriceHistory, UserAsset } from "../intarfaces/asset";
 import type AssetsRepository from "../repositories/AssetsRepository";
+import type { IAsset, PriceHistory } from "@/entities/Asset";
+import type { UserAsset } from "@/entities/User";
+import { handleApiError } from "../utils/handlerError";
 
 export class AssetsService {
   constructor(private repository: AssetsRepository) {}
 
-  async getAll(): Promise<Asset[]> {
+  async getAll(): Promise<IAsset[]> {
     try {
       const assets = (await this.repository.getAll()).data;
       return assets;
     } catch (error) {
-      console.error(error);
+      handleApiError(error);
       return [];
     }
   }
 
-  async getById(id: number): Promise<Asset | null> {
+  async getById(id: number): Promise<IAsset | null> {
     try {
       const asset = (await this.repository.getById(id)).data;
       return asset;
     } catch (error) {
-      console.error(error);
+      handleApiError(error);
       return null;
     }
   }
@@ -29,7 +31,7 @@ export class AssetsService {
       const asset = (await this.repository.getAssetHistory(id)).data;
       return asset;
     } catch (error) {
-      console.error(error);
+      handleApiError(error);
       return [];
     }
   }
@@ -39,7 +41,7 @@ export class AssetsService {
       const assets = (await this.repository.getUserPortfolio(userId)).data;
       return assets;
     } catch (error) {
-      console.error(error);
+      handleApiError(error);
       return [];
     }
   }

@@ -82,9 +82,9 @@ export class AssetService {
 
   async updateAssetPrices(): Promise<void> {
     const assets = await this.getAll();
-    const exchange = await this.prisma.exchange.findFirst();
+    const tradingSession = await this.prisma.tradingSession.findFirst();
 
-    if (!exchange?.isTrading) return;
+    if (!tradingSession?.isTrading) return;
 
     for (const asset of assets) {
       const changePercent = (Math.random() * 10 - 5) / 100;

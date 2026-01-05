@@ -5,8 +5,8 @@ import { BroadcastService } from './broadcast.service';
 import { SubscriptionManagerService } from './subscription-manager.service';
 
 @Injectable()
-export class ExchangeSubscriptionService implements IWebSocketService {
-  private readonly CHANNEL_EXCHANGE = 'exchange';
+export class TradingSessionSubscriptionService implements IWebSocketService {
+  private readonly CHANNEL_TRADING_SESSION = 'tradingSession';
 
   constructor(
     private subscriptionManager: SubscriptionManagerService,
@@ -14,34 +14,34 @@ export class ExchangeSubscriptionService implements IWebSocketService {
   ) {}
 
   handleConnection(client: Socket): void {
-    this.subscriptionManager.subscribe(client.id, this.CHANNEL_EXCHANGE);
+    this.subscriptionManager.subscribe(client.id, this.CHANNEL_TRADING_SESSION);
     console.log(
-      `Exchange service: Client ${client.id} connected and subscribed to exchange`,
+      `Trading session service: Client ${client.id} connected and subscribed to tradingSession`,
     );
   }
 
   handleDisconnect(client: Socket): void {
-    this.subscriptionManager.unsubscribe(client.id, this.CHANNEL_EXCHANGE);
+    this.subscriptionManager.unsubscribe(client.id, this.CHANNEL_TRADING_SESSION);
   }
 
   handleSubscribe(client: Socket, data: any): void {
     console.log(
-      `Exchange service: Client ${client.id} subscription request:`,
+      `Trading session service: Client ${client.id} subscription request:`,
       data,
     );
   }
 
   handleUnsubscribe(client: Socket, data: any): void {
     console.log(
-      `Exchange service: Client ${client.id} unsubscription request:`,
+      `Trading session service: Client ${client.id} unsubscription request:`,
       data,
     );
   }
 
-  async broadcastExchangeStatus(status: any): Promise<void> {
+  async broadcastTradingSessionStatus(status: any): Promise<void> {
     this.broadcastService.broadcastToChannel(
-      this.CHANNEL_EXCHANGE,
-      'exchange-status',
+      this.CHANNEL_TRADING_SESSION,
+      'trading-session-status',
       status,
     );
   }

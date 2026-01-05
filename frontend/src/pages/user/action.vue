@@ -30,20 +30,20 @@
         :asset-name="asset ? asset.name : ''"
         :asset-price="assetPrice"
         :asset-profit="+assetProfit"
-        :traiding-status="exchangeStatus?.isTrading"
+        :traiding-status="marketState?.isTrading"
       />
       <the-user-asset-info
         :balance="user ? +user.currentBalance : 0"
         :available-quantity="asset?.availableQuantity ? asset.availableQuantity : 0"
         :quantity-asset-exits="quantityAssetExits"
         :result="result"
-        :trading-end-time="exchangeStatus?.end"
+        :trading-end-time="marketState?.end"
       >
         <the-user-asset-action
           v-model:price="price"
           v-model:quantity="quantity"
           :status="status"
-          :traiding-status="exchangeStatus?.isTrading"
+          :traiding-status="marketState?.isTrading"
           @on-order="createOrder"
         />
       </the-user-asset-info>
@@ -55,61 +55,65 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ApiFactory } from "@/api";
-import type { Asset } from "@/api/intarfaces/asset";
-import type { ExchangeInfo } from "@/api/intarfaces/exchange";
-import type { OrderCreate } from "@/api/intarfaces/order";
-import type { User } from "@/api/intarfaces/user";
-import useExchange from "@/composables/useExchange";
+import useTradingSession from "@/composables/useTradingSession";
 import userAssets from '@/composables/useAssets';
+import { Asset } from "@/entities/Asset";
+import TradingSession from "@/entities/TradingSession";
+import { User } from "@/entities/User";
+import { OrderType } from "@/entities/Order";
+import Order from "@/entities/Order";
+import { useNotifications } from "@/composables/useNotifications";
 
 const assetService = ApiFactory.createAssetsService();
 const userService = ApiFactory.createUserService();
-const exchangeService = ApiFactory.createExchangeService();
+const tradingSessionService = ApiFactory.createTradingSessionService();
 const orderService = ApiFactory.createOrderService();
 
 const loading = ref(true);
 
 const route = useRoute();
-const { updatedExchange } = useExchange();
+const { updatedTradingSession } = useTradingSession();
 const { selectAsset, selectedAssetId, assetPrice } = userAssets();
+const { info } = useNotifications();
 
-const status = route.query?.mode;
+const status = route.query?.mode as OrderType;
 const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
 selectedAssetId.value = typeof route.query?.id === "string" ? +route.query?.id : 0;
 
 const user = ref<User | null>(null);
 const asset = ref<Asset | null>(null);
-const exchangeStatus = ref<ExchangeInfo | null>(null);
+const marketState = ref<TradingSession | null>(null);
 
 const quantityAssetExits = ref(0);
 const quantity = ref<string>("");
 const price = ref<number>();
 
-//TODO loader
 onMounted(async () => {
-  user.value = await userService.getById(userId);
-  exchangeStatus.value = await exchangeService.getStatus();
+  const loadedUser = await userService.getById(userId);
+  if (loadedUser) {
+    user.value = new User(loadedUser);
+  }
+  const loadedMarket = await tradingSessionService.getStatus();
+  if (loadedMarket) {
+    marketState.value = new TradingSession(loadedMarket);
+  }
   if (selectedAssetId.value) {
-    asset.value = await assetService.getById(selectedAssetId.value);
+    const loadedAsset = await assetService.getById(selectedAssetId.value);
+    asset.value = loadedAsset ? new Asset(loadedAsset) : null;
     assetPrice.value = asset.value?.price ?? 0;
     selectAsset(selectedAssetId.value);
+    quantityAssetExits.value = user.value?.getQuantityByAssetId(selectedAssetId.value) ?? 0;
   }
-  quantityAssetExits.value =
-    user.value?.assets?.find((asset) => asset.assetId === selectedAssetId.value)?.quantity ??
-    0;
   price.value = asset.value?.price;
   loading.value = false;
 });
 
 const assetProfit = computed(() => {
-  if (asset.value) {
-    return (((asset.value?.price - asset.value?.closingPrice)/asset.value?.price) * 100).toFixed(2);
-  }
-  return 0;
+  return asset.value?.getProfitPercent().toFixed(2) ?? 0;
 });
 
-watch(updatedExchange, (v) => {
-  exchangeStatus.value = v;
+watch(updatedTradingSession, (v) => {
+  marketState.value = v;
 });
 
 const result = computed(() => {
@@ -119,14 +123,19 @@ const result = computed(() => {
 });
 
 const createOrder = async () => {
-  if (user.value && asset.value && quantity.value) {
-    const order: OrderCreate  = {
-      userId: user.value?.id,
-      assetId: asset.value?.id,
-      type: status as string,
-      quantity: +quantity.value,
+  const order = Order.getOrderRequest(
+    status,
+    user.value,
+    asset.value,
+    quantity.value,
+  );
+  if (order) {
+    const saved = await orderService.create(order);
+    if (saved) {
+      const event = saved.type === OrderType.Buy ? 'Покупка' : 'Продажа';
+      const message = `${event} прошла успешно`;
+      info(message, 'Информация');
     }
-    await orderService.create(order);
   }
 };
 </script>

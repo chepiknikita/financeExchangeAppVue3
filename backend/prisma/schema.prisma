@@ -60,13 +60,13 @@ model UserAsset {
   @@map("user_assets")
 }
 
-model Exchange {
+model TradingSession {
   id        Int       @id @default(autoincrement())
   start     DateTime
   end       DateTime?
   isTrading Boolean   @default(false)
 
-  @@map("exchange")
+  @@map("trading_session")
 }
 
 model Order {

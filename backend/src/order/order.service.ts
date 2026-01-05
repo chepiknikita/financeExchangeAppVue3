@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssetService } from 'src/asset/asset.service';
-import { ExchangeService } from 'src/exchange/exchange.service';
+import { TradingSessionService } from 'src/tradingSession/tradingSession.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateOrderDto } from './dto/creat-order.dto';
-import { Order } from './entities/order.entity';
+import { Order, OrderType } from './entities/order.entity';
 import { Asset, UserAsset } from 'generated/prisma';
 import { WebSocketFacadeService } from '../websocket/services/websocket-facade.service';
 
@@ -14,13 +14,13 @@ export class OrderService {
     private prisma: PrismaService,
     private userService: UserService,
     private assetService: AssetService,
-    private exchangeService: ExchangeService,
+    private tradingSessionService: TradingSessionService,
     private webSocketFacade: WebSocketFacadeService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const exchange = await this.exchangeService.getExchangeStatus();
-    if (!exchange.isTrading) {
+    const tradingSession = await this.tradingSessionService.getStatus();
+    if (!tradingSession.isTrading) {
       throw new BadRequestException('Торги остановлены');
     }
 
@@ -64,7 +64,7 @@ export class OrderService {
         data: {
           userId: user.id,
           assetId: asset.id,
-          type: 'BUY',
+          type: OrderType.Buy,
           quantity,
           price: asset.price,
           executedAt: new Date(),
@@ -115,7 +115,7 @@ export class OrderService {
         data: {
           userId: user.id,
           assetId: asset.id,
-          type: 'SELL',
+          type: OrderType.Sell,
           quantity,
           price: asset.price,
           executedAt: new Date(),
@@ -145,7 +145,7 @@ export class OrderService {
     assetId: number,
     quantity: number,
     buyPrice: number,
-    status: 'BUY' | 'SELL',
+    status: OrderType,
   ): Promise<void> {
     const existingUserAsset: UserAsset = await tx.userAsset.findUnique({
       where: {

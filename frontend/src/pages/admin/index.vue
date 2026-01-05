@@ -24,7 +24,7 @@
       <div class="text-h6">Контроль торгов</div>
       <div class="text-center">
         <div>Информация</div>
-        <div :class="[ exchangeStatus?.isTrading ? 'growth' : 'blocker' ]">Статус биржы: {{ status }}</div>
+        <div :class="[ marketState?.isTrading ? 'growth' : 'blocker' ]">Статус биржы: {{ status }}</div>
         <div class="my-2 border px-4 py-2">
           <div class="my-2">Период работы:</div>
             <VueDatePicker
@@ -83,19 +83,25 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
 import { formatMoneyAmount } from "@/utilities/helpers";
-import type { User } from "@/api/intarfaces/user";
-import type { ExchangeInfo } from "@/api/intarfaces/exchange";
 import { ru } from 'date-fns/locale';
+import { User } from "@/entities/User";
+import TradingSession from "@/entities/TradingSession";
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
-const exchangeService = ApiFactory.createExchangeService();
+const tradingSessionService = ApiFactory.createTradingSessionService();
 
 const loading = ref(true);
 
 const users = ref<User[]>([]);
 const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
-const exchangeStatus = ref<ExchangeInfo | null>(null);
+const marketState = ref<TradingSession | null>(null);
+const snapshot = ref<string>("");
+
+const model = ref<{ date: number[], isTrading: boolean }>({
+  date: [],
+  isTrading: false,
+});
 
 const headers = [
   { title: "Пользователь", key: "name", width: "70%" },
@@ -107,23 +113,17 @@ const headers = [
   },
 ];
 
-const dialog = ref(false);
-const model = ref<{ isTrading: boolean, date: number[] }>({
-  isTrading: false,
-  date: [],
-});
-
-const snapshot = ref<string>("");
-
 onMounted(async () => {
-  users.value = (await userService.getAll()).filter((v) => v.id !== userId);
-  await loadExchangeStatus();
+  users.value = (await userService.getAll())
+    .filter((v) => v.id !== userId)
+    .map((v) => new User(v));
+  await loadTradingSession();
   snapshot.value = JSON.stringify(model.value);
   loading.value = false;
 });
 
 const status = computed(() => {
-  return exchangeStatus.value?.isTrading ? 'идут торги' : 'торги остановлены';
+  return marketState.value?.isTrading ? 'идут торги' : 'торги остановлены';
 });
 
 const nextStatus = computed(() => {
@@ -134,25 +134,20 @@ const disabled = computed(() => {
   return snapshot.value === JSON.stringify(model.value);
 })
 
-const onSelectUser = (event: MouseEvent, row: { item: User }) => {
+const onSelectUser = (_: MouseEvent, row: { item: User }) => {
   router.push(`/admin/user/${row.item.id}`);
 };
 
 const save = async () => {
-  dialog.value = false;
-  await exchangeService.updateStatus({
-    start: model.value.date[0],
-    end: model.value.date[1],
-    isTrading: model.value.isTrading,
-  });
-  await loadExchangeStatus();
+  await tradingSessionService.updateStatus(TradingSession.fromTimestampObject(model.value));
+  await loadTradingSession();
 }
 
-const loadExchangeStatus = async () => {
-  exchangeStatus.value = await exchangeService.getStatus();
-  if (exchangeStatus.value?.start && exchangeStatus.value?.end) {
-    model.value.date = [exchangeStatus.value.start, exchangeStatus.value?.end];
-    model.value.isTrading = exchangeStatus.value.isTrading;
+const loadTradingSession = async () => {
+  const loadedMarket = await tradingSessionService.getStatus();
+  if (loadedMarket) {
+    marketState.value = new TradingSession(loadedMarket);
+    model.value = marketState.value.toTimestampObject();
   }
 }
 </script>

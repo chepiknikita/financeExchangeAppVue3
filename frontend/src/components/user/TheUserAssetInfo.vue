@@ -35,7 +35,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatMoneyAmount } from "@/utilities/helpers";
-//TODO - add loader
 //TODO styling - cashe
 const props = withDefaults(
   defineProps<{

@@ -45,9 +45,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ApiFactory } from '@/api';
-import type { User } from '@/api/intarfaces/user';
 import { useRouter } from 'vue-router';
 import { definePage } from 'vue-router/auto';
+import { User } from '@/entities/User';
 
 definePage({
   meta: {
@@ -55,9 +55,10 @@ definePage({
   }
 });
 
+const loading = ref(true);
 const router = useRouter();
 const userService = ApiFactory.createUserService();
-const loading = ref(true);
+const users = ref<User[]>([]);
 
 const headers = [
   {
@@ -78,10 +79,9 @@ const headers = [
     align: 'end',
   },
 ];
-const users = ref<User[]>([]);
 
 onMounted(async () => {
-  users.value = await userService.getAll();
+  users.value = ((await userService.getAll()).map((u) => new User(u)));
   loading.value = false;
 });
 

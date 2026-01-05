@@ -1,4 +1,4 @@
-import type { User } from "../intarfaces/user";
+import type { IUser } from "@/entities/User";
 import type UserEndpoint from "../endpoints/UserEndpoint";
 import type { AxiosResponse } from "axios";
 
@@ -9,11 +9,11 @@ export default class UserRepository {
     this.api = api;
   }
 
-  async getAll(): Promise<AxiosResponse<User[]>> {
-    return this.api.getAll<User[]>();
+  async getAll(): Promise<AxiosResponse<IUser[]>> {
+    return this.api.getAll<IUser[]>();
   }
 
-  async getById(id: number): Promise<AxiosResponse<User>> {
-    return this.api.getById<User>(id);
+  async getById(id: number): Promise<AxiosResponse<IUser>> {
+    return this.api.getById<IUser>(id);
   }
 }
