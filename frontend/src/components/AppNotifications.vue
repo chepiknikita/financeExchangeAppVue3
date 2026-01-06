@@ -20,9 +20,9 @@
         <v-btn
           icon
           variant="text"
+          color="white"
           size="small"
           :ripple="false"
-          :color="actionButtonColor(notification.type)"
           @click="removeNotification(notification.id)"
         >
           <v-icon>mdi-close</v-icon>
@@ -50,16 +50,10 @@ watch(notifications, (value) => {
 
 const snackbarColor = (type: string) => {
   const colors = {
-    success: 'success',
     error: 'error',
-    warning: 'warning',
     info: 'info',
   };
   return colors[type as keyof typeof colors] || 'info';
-};
-
-const actionButtonColor = (type: string) => {
-  return type === 'warning' ? 'black' : 'white';
 };
 
 const onSnackbarClose = (id: number) => {

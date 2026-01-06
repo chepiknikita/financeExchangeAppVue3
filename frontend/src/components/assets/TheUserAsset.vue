@@ -21,15 +21,14 @@
       </div>
       <div class="d-flex justify-space-between text-disabled">
         <div>Изменение стоимости:</div>
-        <div>{{ +(asset.price - asset.closingPrice).toFixed(2) }} | {{ +(((asset.price -
-          asset.closingPrice) / asset.price) * 100).toFixed(2) }}</div>
+        <div>{{ +asset.getProfit().toFixed(2) }} | {{ +asset.getProfitPercent().toFixed(2) }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Asset, AssetInfo } from '@/api/intarfaces/asset';
+import type { Asset } from '@/entities/Asset';
 
 defineProps<{
   asset: Asset | null;

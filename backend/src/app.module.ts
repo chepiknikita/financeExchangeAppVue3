@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { AssetModule } from './asset/asset.module';
-import { ExchangeModule } from './exchange/exchange.module';
+import { TradingSessionModule } from './tradingSession/tradingSession.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrderModule } from './order/order.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   controllers: [],
-  providers: [ExchangeModule],
+  providers: [TradingSessionModule],
   imports: [
     PrismaModule,
     UserModule,
     AssetModule,
-    ExchangeModule,
+    TradingSessionModule,
     OrderModule,
     ScheduleModule.forRoot(),
   ],

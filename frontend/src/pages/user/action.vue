@@ -1,24 +1,49 @@
 <template>
   <div class="page-wrapper h-100 overflow-hidden">
-    <div class="page-content-title">
+    <div
+      v-if="loading"
+      class="d-flex justify-center align-center flex-column mt-8"
+    >
+      <v-skeleton-loader
+        type="list-item-three-line"
+        :width="200"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="list-item-three-line"
+        :width="300"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="heading"
+        :width="150"
+        class="my-2"
+      />
+      <v-skeleton-loader
+        type="heading"
+        :width="150"
+        class="my-2"
+      />
+    </div>
+    <div v-else class="page-content-title">
       <the-asset-info
         :asset-name="asset ? asset.name : ''"
-        :asset-price="assetPrice"
+        :asset-price="asset?.price"
         :asset-profit="+assetProfit"
-        :traiding-status="exchangeStatus?.isTrading"
+        :traiding-status="session?.isTrading"
       />
       <the-user-asset-info
-        :balance="user ? +user.balance : 0"
+        :balance="user ? +user.currentBalance : 0"
         :available-quantity="asset?.availableQuantity ? asset.availableQuantity : 0"
         :quantity-asset-exits="quantityAssetExits"
         :result="result"
-        :trading-end-time="exchangeStatus?.end"
+        :trading-end-time="session?.end"
       >
         <the-user-asset-action
           v-model:price="price"
           v-model:quantity="quantity"
           :status="status"
-          :traiding-status="exchangeStatus?.isTrading"
+          :traiding-status="session?.isTrading"
           @on-order="createOrder"
         />
       </the-user-asset-info>
@@ -30,58 +55,53 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ApiFactory } from "@/api";
-import type { Asset } from "@/api/intarfaces/asset";
-import type { ExchangeInfo } from "@/api/intarfaces/exchange";
-import type { OrderCreate } from "@/api/intarfaces/order";
-import type { User } from "@/api/intarfaces/user";
-import useExchange from "@/composables/useExchange";
-import userAssets from '@/composables/useAssets';
+import useAssets from '@/composables/useAssets';
+import { Asset } from "@/entities/Asset";
+import { User } from "@/entities/User";
+import { Order, OrderType } from "@/entities/Order";
+import { useNotifications } from "@/composables/useNotifications";
+import useTradingSession from '@/composables/useTradingSession';
 
 const assetService = ApiFactory.createAssetsService();
 const userService = ApiFactory.createUserService();
-const exchangeService = ApiFactory.createExchangeService();
 const orderService = ApiFactory.createOrderService();
+const { loadTradingSession, session } = useTradingSession();
+
+const loading = ref(true);
 
 const route = useRoute();
-const { updatedExchange } = useExchange();
-const { selectAsset, selectedAssetId, assetPrice } = userAssets();
+const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
+const { info } = useNotifications();
 
-const status = route.query?.mode;
+const status = route.query?.mode as OrderType;
 const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
 selectedAssetId.value = typeof route.query?.id === "string" ? +route.query?.id : 0;
 
 const user = ref<User | null>(null);
 const asset = ref<Asset | null>(null);
-const exchangeStatus = ref<ExchangeInfo | null>(null);
 
 const quantityAssetExits = ref(0);
 const quantity = ref<string>("");
 const price = ref<number>();
 
-//TODO loader
 onMounted(async () => {
-  user.value = await userService.getById(userId);
-  exchangeStatus.value = await exchangeService.getStatus();
-  if (selectedAssetId.value) {
-    asset.value = await assetService.getById(selectedAssetId.value);
-    assetPrice.value = asset.value?.price ?? 0;
-    selectAsset(selectedAssetId.value);
+  const loadedUser = await userService.getById(userId);
+  if (loadedUser) {
+    user.value = new User(loadedUser);
   }
-  quantityAssetExits.value =
-    user.value?.assets?.find((asset) => asset.assetId === selectedAssetId.value)?.quantity ??
-    0;
+  await loadTradingSession();
+  if (selectedAssetId.value) {
+    const loadedAsset = await assetService.getById(selectedAssetId.value);
+    asset.value = loadedAsset ? new Asset(loadedAsset) : null;
+    selectAsset(selectedAssetId.value);
+    quantityAssetExits.value = user.value?.getQuantityByAssetId(selectedAssetId.value) ?? 0;
+  }
   price.value = asset.value?.price;
+  loading.value = false;
 });
 
 const assetProfit = computed(() => {
-  if (asset.value) {
-    return (((asset.value?.price - asset.value?.closingPrice)/asset.value?.price) * 100).toFixed(2);
-  }
-  return 0;
-});
-
-watch(updatedExchange, (v) => {
-  exchangeStatus.value = v;
+  return asset.value?.getProfitPercent().toFixed(2) ?? 0;
 });
 
 const result = computed(() => {
@@ -90,15 +110,26 @@ const result = computed(() => {
     : null;
 });
 
+watch(updatedAsset, (v) => {
+  if (v) {
+    asset.value?.updatePrice(v);
+  }
+});
+
 const createOrder = async () => {
-  if (user.value && asset.value && quantity.value) {
-    const order: OrderCreate  = {
-      userId: user.value?.id,
-      assetId: asset.value?.id,
-      type: status as string,
-      quantity: +quantity.value,
+  const order = Order.getOrderRequest(
+    status,
+    user.value,
+    asset.value,
+    quantity.value,
+  );
+  if (order) {
+    const saved = await orderService.create(order);
+    if (saved) {
+      const event = saved.type === OrderType.Buy ? 'Покупка' : 'Продажа';
+      const message = `${event} прошла успешно`;
+      info(message, 'Информация');
     }
-    await orderService.create(order);
   }
 };
 </script>

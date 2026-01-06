@@ -6,9 +6,9 @@ import { UserService } from "./services/UserService";
 import AssetsRepository from "./repositories/AssetsRepository";
 import AssetsEndpoint from "./endpoints/AssetsEndpoint";
 import { AssetsService } from "./services/AssetsService";
-import { ExchangeService } from "./services/ExchangeService";
-import ExchangeRepository from "./repositories/ExchangeRepository";
-import ExchangeEndpoint from "./endpoints/ExchangeEndpoint";
+import { TradingSessionService } from "./services/TradingSessionService";
+import TradingSessionRepository from "./repositories/TradingSessionRepository";
+import TradingSessionEndpoint from "./endpoints/TradingSessionEndpoint";
 import OrderEndpoint from "./endpoints/OrderEndpoint";
 import OrderRepository from "./repositories/OrderRepository";
 import { OrderService } from "./services/OrderService";
@@ -37,12 +37,12 @@ export class ApiFactory {
     return new AssetsService(repository);
   }
 
-  public static createExchangeService(): ExchangeService {
+  public static createTradingSessionService(): TradingSessionService {
     this.initialize();
-    const repository = new ExchangeRepository(
-      new ExchangeEndpoint(this.apiClient)
+    const repository = new TradingSessionRepository(
+      new TradingSessionEndpoint(this.apiClient)
     );
-    return new ExchangeService(repository);
+    return new TradingSessionService(repository);
   }
 
   public static createOrderService(): OrderService {

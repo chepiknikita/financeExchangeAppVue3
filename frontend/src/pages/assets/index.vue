@@ -14,26 +14,39 @@
         class="text-none text-body-1"
       />
     </v-tabs>
-    <div class="page-wrapper">
+    <div
+      v-if="loading"
+      class="d-flex justify-center my-8"
+    >
+      <v-skeleton-loader
+        type="image"
+        :width="600"
+      />
+    </div>
+    <div
+      v-else
+      class="page-wrapper"
+    >
       <v-tabs-window v-model="tab">
-        <v-tabs-window-item value="stock" class="my-0 mx-auto">
+        <v-tabs-window-item
+          value="stock"
+          class="my-0 mx-auto"
+        >
           <finance-table
             :headers="headers"
             :items="stocks"
+            :traiding-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
-        <v-tabs-window-item value="bond" class="my-0 mx-auto">
-          <finance-table
-            :headers="headers"
-            :items="bonds"
-            @click:row="onSelectAsset"
-          />
-        </v-tabs-window-item>
-        <v-tabs-window-item value="metal" class="my-0 mx-auto">
+        <v-tabs-window-item
+          value="metal"
+          class="my-0 mx-auto"
+        >
           <finance-table
             :headers="headers"
             :items="metals"
+            :traiding-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -46,24 +59,24 @@
 import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
-import type { Asset } from "@/api/intarfaces/asset";
+import { Asset, AssetType } from "@/entities/Asset";
+import useAssets from '@/composables/useAssets';
 import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
-import userAssets from '@/composables/useAssets';
+import useTradingSession from '@/composables/useTradingSession';
 
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const { subscribeToAssets, needUpdatedAllAssets } = userAssets();
+const { subscribeToAssets, refrashAssets } = useAssets();
+const { loadTradingSession, session } = useTradingSession();
 
+const loading = ref(true);
 const tab = ref(null);
 const stocks = ref<Asset[]>([]);
-const bonds = ref<Asset[]>([]);
 const metals = ref<Asset[]>([]);
-//TODO - loaders
-//TODO - enum AssetType
+
 const tabs = [
-  { name: "Акции", key: "stock" },
-  { name: "Облигации", key: "bond" },
-  { name: "Металлы", key: "metal" },
+  { name: "Акции", key: AssetType.Stock },
+  { name: "Металлы", key: AssetType.Metal },
 ];
 
 const headers = [
@@ -72,24 +85,22 @@ const headers = [
 ];
 
 onMounted(async () => {
+  await loadTradingSession();
   await loadAssets();
   subscribeToAssets();
+  loading.value = false;
 });
 
 const loadAssets = async () => {
-  const assets: Asset[] = (await assetService.getAll()).map((v) => {
-    v.profit = +(v.price - v.closingPrice).toFixed(2);
-    return v;
-  });
-  stocks.value = assets.filter((v) => v.type === "stock");
-  bonds.value = assets.filter((v) => v.type === "bond");
-  metals.value = assets.filter((v) => v.type === "metal");
+  const assets: Asset[] = (await assetService.getAll()).map((v) => new Asset(v));
+  stocks.value = assets.filter((v) => v.type === AssetType.Stock);
+  metals.value = assets.filter((v) => v.type === AssetType.Metal);
 }
-// TODO - rename - refrashAssets
-watch(needUpdatedAllAssets, async (v) => {
+
+watch(refrashAssets, async (v) => {
   if (v) {
     await loadAssets();
-    needUpdatedAllAssets.value = false;
+    refrashAssets.value = false;
   }
 });
 

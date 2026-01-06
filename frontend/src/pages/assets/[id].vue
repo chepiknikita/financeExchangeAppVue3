@@ -1,15 +1,34 @@
 <template>
   <div
-    v-if="asset"
+    v-if="loading"
+    class="d-flex justify-center align-center flex-column mt-8"
+  >
+    <v-skeleton-loader
+      type="list-item-three-line"
+      :width="300"
+      class="my-2"
+    />
+    <v-skeleton-loader
+      type="image"
+      :width="600"
+    />
+    <v-skeleton-loader
+      type="list-item-three-line"
+      :width="400"
+      class="my-2"
+    />
+  </div>
+  <div
+    v-else-if="asset"
     class="page-wrapper overflow-hidden position-relative"
   >
     <the-asset-info
       :asset-name="asset.name"
-      :asset-price="assetPrice"
+      :asset-price="asset.price"
       :asset-profit="+assetProfit"
-      :traiding-status="exchangeStatus?.isTrading"
+      :traiding-status="session?.isTrading"
     />
-    <the-asset-chart :priceHistory="priceHistory" />
+    <the-asset-chart :priceHistory="asset.history" />
     <the-user-asset :asset="asset" />
     <the-asset-actions
       @buy="onBuy"
@@ -23,63 +42,57 @@
 import { onMounted, ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
-import type { Asset, PriceHistory } from "@/api/intarfaces/asset";
-import type { ExchangeInfo } from "@/api/intarfaces/exchange";
+import { OrderType } from "@/entities/Order";
 import TheAssetInfo from "@/components/assets/TheAssetInfo.vue";
 import TheAssetChart from "@/components/assets/TheAssetChart.vue";
 import TheUserAsset from "@/components/assets/TheUserAsset.vue";
-import useExchange from "@/composables/useExchange";
-import userAssets from '@/composables/useAssets';
+import useAssets from '@/composables/useAssets';
+import useTradingSession from '@/composables/useTradingSession';
+import { Asset } from "@/entities/Asset";
 
+const loading = ref(true);
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const exchangeService = ApiFactory.createExchangeService();
-const { updatedExchange } = useExchange();
-const { selectAsset, selectedAssetId, assetPrice, history } = userAssets();
+const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
+const { loadTradingSession, session } = useTradingSession();
 
 selectedAssetId.value = router.currentRoute.value.params.id;
-const exchangeStatus = ref<ExchangeInfo | null>(null);
 const asset = ref<Asset | null>(null);
-const priceHistory = ref<PriceHistory[]>([]);
 
 const assetProfit = computed(() => {
-  if (asset.value) {
-    return (((asset.value?.price - asset.value?.closingPrice)/asset.value?.price) * 100).toFixed(2);
-  }
-  return 0;
+  return asset.value?.getProfitPercent().toFixed(2) ?? 0;
 });
 
 onMounted(async () => {
-  exchangeStatus.value = await exchangeService.getStatus();
+  await loadTradingSession();
   if (selectedAssetId.value) {
-    asset.value = await assetService.getById(selectedAssetId.value);
-    priceHistory.value = await assetService.getAssetHistory(selectedAssetId.value);
-    assetPrice.value = asset.value?.price ?? 0;
+    const loadedAsset = await assetService.getById(selectedAssetId.value);
+    if (loadedAsset) {
+      asset.value = new Asset(loadedAsset);
+      asset.value.setHistory(await assetService.getAssetHistory(selectedAssetId.value))
+    }
     selectAsset(selectedAssetId.value);
   }
+  loading.value = false;
 });
 
-watch(updatedExchange, (v) => {
-  exchangeStatus.value = v;
-});
-
-watch(history, (v) => {
+watch(updatedAsset, (v) => {
   if (v) {
-    priceHistory.value.unshift(v);
+    asset.value?.updatePrice(v);
   }
-})
+});
 
 const onSell = () => {
   router.push({
     name: "/user/action",
-    query: { mode: "SELL", id: selectedAssetId.value },
+    query: { mode: OrderType.Sell, id: selectedAssetId.value },
   });
 };
 
 const onBuy = () => {
   router.push({
     name: "/user/action",
-    query: { mode: "BUY", id: selectedAssetId.value },
+    query: { mode: OrderType.Buy, id: selectedAssetId.value },
   });
 };
 </script>

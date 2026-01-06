@@ -1,5 +1,9 @@
 const columns = [
-  { title: "Название", key: "name", width: "70%" },
+  {
+    title: "Название",
+    key: "name",
+    width: "70%"
+  },
   {
     title: "Цена",
     key: "price",

@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AssetSubscriptionService } from './asset-subscription.service';
-import { ExchangeSubscriptionService } from './exchange-subscription.service';
+import { TradingSessionSubscriptionService } from './trading-session-subscription.service';
 import { OrderSubscriptionService } from './order-subscription.service';
 
 @Injectable()
@@ -10,14 +10,14 @@ export class WebSocketFacadeService implements OnModuleInit {
 
   constructor(
     private assetSubscriptionService: AssetSubscriptionService,
-    private exchangeSubscriptionService: ExchangeSubscriptionService,
+    private tradingSessionSubscriptionService: TradingSessionSubscriptionService,
     private orderSubscriptionService: OrderSubscriptionService,
   ) {}
 
   onModuleInit() {
     this.services.set('assets', this.assetSubscriptionService);
-    this.services.set('exchange', this.exchangeSubscriptionService);
     this.services.set('orders', this.orderSubscriptionService);
+    this.services.set('trading-session', this.tradingSessionSubscriptionService);
   }
 
   handleConnection(client: Socket): void {
@@ -61,8 +61,8 @@ export class WebSocketFacadeService implements OnModuleInit {
     await this.assetSubscriptionService.broadcastAssetsUpdate();
   }
 
-  async broadcastExchangeStatus(status: any): Promise<void> {
-    await this.exchangeSubscriptionService.broadcastExchangeStatus(status);
+  async broadcastTradingSessionStatus(status: any): Promise<void> {
+    await this.tradingSessionSubscriptionService.broadcastTradingSessionStatus(status);
   }
 
   async broadcastOrderCreated(order: any): Promise<void> {

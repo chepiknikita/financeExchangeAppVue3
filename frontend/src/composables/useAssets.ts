@@ -1,22 +1,18 @@
-import type { Asset, PriceHistory } from "@/api/intarfaces/asset";
 import { useWebSocket } from "@/composables/useWebSocket";
+import { type IAsset, type PriceHistory } from "@/entities/Asset";
 
-export default function userAssets() {
+export default function useAssets() {
   const { subscribe } = useWebSocket();
 
   const selectedAssetId = ref<number | null>(null);
-  const updatedAsset = ref<Asset | null>(null);
-  const needUpdatedAllAssets = ref<boolean>(false);
-  const assetPrice = ref<number>(0);
-  const history = ref<PriceHistory | null>(null);
+  const updatedAsset = ref<{ asset: IAsset; price: PriceHistory } | null>(null);
+  const refrashAssets = ref<boolean>(false);
 
   const subscribeToAsset = (assetId: number) => {
-    subscribe("asset", assetId, `asset-update`, (data) => {
+    subscribe("asset", assetId, "asset-update", (data) => {
       console.log(`Прослушивание канала -  assets:${assetId}`, data);
-      if (data.asset) {
-        updatedAsset.value = data.asset;
-        assetPrice.value = data.asset.price;
-        history.value = data.price ?? null;
+      if (data) {
+        updatedAsset.value = data;
       }
     });
   };
@@ -25,7 +21,7 @@ export default function userAssets() {
     subscribe(null, null, "assets-update", (data) => {
       console.log("Прослушивание канала - assets-update", data);
       if (data?.type === "assets-update") {
-        needUpdatedAllAssets.value = true;
+        refrashAssets.value = true;
       }
     });
   };
@@ -42,8 +38,6 @@ export default function userAssets() {
     selectAsset,
     updatedAsset,
     selectedAssetId,
-    needUpdatedAllAssets,
-    assetPrice,
-    history,
+    refrashAssets,
   };
 }

@@ -41,12 +41,13 @@
 </template>
 
 <script setup lang="ts">
+import { OrderType } from '@/entities/Order';
 
 const emit = defineEmits(['onOrder']);
 
 const props = withDefaults(
   defineProps<{
-    status: 'SELL' | 'BUY',
+    status: OrderType,
     traidingStatus: boolean | undefined;
   }>(),
   {
@@ -54,10 +55,10 @@ const props = withDefaults(
   }
 );
 
-const price = defineModel<number | undefined>("price", { required: true });
+const price = defineModel<number | undefined>("price", { default: undefined });
 const quantity = defineModel<string>("quantity", { default: "" });
 
-const btnTitile = props.status === "SELL" ? "Продать" : "Купить";
+const btnTitile = props.status === OrderType.Sell ? "Продать" : "Купить";
 
 const validateKey = (event: KeyboardEvent): void => {
   if (!/^\d$/.test(event.key)) {

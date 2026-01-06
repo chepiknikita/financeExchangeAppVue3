@@ -82,9 +82,9 @@ export class AssetService {
 
   async updateAssetPrices(): Promise<void> {
     const assets = await this.getAll();
-    const exchange = await this.prisma.exchange.findFirst();
+    const tradingSession = await this.prisma.tradingSession.findFirst();
 
-    if (!exchange?.isTrading) return;
+    if (!tradingSession?.isTrading) return;
 
     for (const asset of assets) {
       const changePercent = (Math.random() * 10 - 5) / 100;
@@ -99,12 +99,12 @@ export class AssetService {
     const assets = await this.prisma.asset.findMany();
 
     for (const asset of assets) {
-      await this.updateStockClosingPrice(asset.id);
+      await this.updateAssetClosingPrice(asset.id);
     }
     await this.webSocketFacade.broadcastAssetsUpdate();
   }
 
-  async updateStockClosingPrice(assetId: number): Promise<void> {
+  async updateAssetClosingPrice(assetId: number): Promise<void> {
     const asset = await this.getEntityById(assetId);
     await this.prisma.asset.update({
       where: { id: assetId },

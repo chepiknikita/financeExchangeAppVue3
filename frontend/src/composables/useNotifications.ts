@@ -2,7 +2,7 @@ import { reactive } from "vue";
 
 export interface Notification {
   id: number;
-  type: "success" | "error" | "warning" | "info";
+  type: "error" | "info";
   title?: string;
   message: string;
   duration?: number;
@@ -34,7 +34,6 @@ export function useNotifications() {
 
     state.notifications.push(fullNotification);
 
-    // Автоматическое удаление через указанное время
     if (fullNotification.duration && fullNotification.duration > 0) {
       setTimeout(() => {
         removeNotification(id);
@@ -44,15 +43,6 @@ export function useNotifications() {
     return id;
   };
 
-  const success = (message: string, title?: string) => {
-    return notify({
-      type: "success",
-      title,
-      message,
-      icon: "mdi-check-circle",
-    });
-  };
-
   const error = (message: string, title?: string) => {
     return notify({
       type: "error",
@@ -60,15 +50,6 @@ export function useNotifications() {
       message,
       icon: "mdi-alert-circle",
       duration: 8000,
-    });
-  };
-
-  const warning = (message: string, title?: string) => {
-    return notify({
-      type: "warning",
-      title: title || "Внимание",
-      message,
-      icon: "mdi-alert",
     });
   };
 
@@ -95,9 +76,7 @@ export function useNotifications() {
   return {
     notifications: state.notifications,
     notify,
-    success,
     error,
-    warning,
     info,
     removeNotification,
     clearAll,

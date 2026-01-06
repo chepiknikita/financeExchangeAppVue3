@@ -1,6 +1,6 @@
 import { IsBoolean, IsDateString, IsOptional } from '@nestjs/class-validator';
 
-export class  UpdateExchangeDto {
+export class UpdateTradingSessionDto {
   @IsOptional()
   @IsDateString()
   start?: Date;

@@ -1,5 +1,5 @@
 import type { AxiosInstance, AxiosResponse } from "axios";
-import type { OrderCreate } from "../intarfaces/order";
+import type { OrderRequest } from "@/entities/Order";
 
 export default class OrderEndpoint {
   api: AxiosInstance;
@@ -16,7 +16,7 @@ export default class OrderEndpoint {
     return await this.api.get(`orders/${userId}`);
   }
 
-  async create<T>(payload: OrderCreate): Promise<AxiosResponse<T>> {
+  async create<T>(payload: OrderRequest): Promise<AxiosResponse<T>> {
     return await this.api.post("orders", payload);
   }
 }

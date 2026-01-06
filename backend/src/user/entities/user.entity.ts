@@ -4,7 +4,8 @@ export interface User {
   id: number;
   login: string;
   name: string;
-  balance: number;
+  initialBalance: number;
+  currentBalance: number;
   role: UserRole | string;
   assets?: Asset[];
 }

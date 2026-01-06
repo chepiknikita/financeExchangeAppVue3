@@ -1,6 +1,6 @@
 import type { AxiosResponse } from "axios";
 import type OrderEndpoint from "../endpoints/OrderEndpoint";
-import type { Order, OrderCreate } from "../intarfaces/order";
+import type { IOrder, OrderRequest } from "@/entities/Order";
 
 export default class OrderRepository {
   api: OrderEndpoint;
@@ -9,15 +9,15 @@ export default class OrderRepository {
     this.api = api;
   }
 
-  async getAll(): Promise<AxiosResponse<Order[]>> {
-    return this.api.getAll<Order[]>();
+  async getAll(): Promise<AxiosResponse<IOrder[]>> {
+    return this.api.getAll<IOrder[]>();
   }
 
-  async getUserOrders(id: number): Promise<AxiosResponse<Order>> {
-    return this.api.getUserOrders<Order>(id);
+  async getUserOrders(id: number): Promise<AxiosResponse<IOrder>> {
+    return this.api.getUserOrders<IOrder>(id);
   }
 
-  async create(payload: OrderCreate): Promise<AxiosResponse<Order>> {
-    return this.api.create<Order>(payload);
+  async create(payload: OrderRequest): Promise<AxiosResponse<IOrder>> {
+    return this.api.create<IOrder>(payload);
   }
 }
