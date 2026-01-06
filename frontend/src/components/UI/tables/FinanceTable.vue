@@ -50,8 +50,8 @@
             }}₽ |
             {{
               isTotal
-                ? Asset.getFormatMoney((item.getTotalProfit()/(item.price * item.quantity)*100), 0)
-                : Asset.getFormatMoney(((item.getProfit())/item.price * 100), 0)
+                ? Asset.getFormatMoney((item.getTotalProfit()/(item.price * item.quantity)*100))
+                : Asset.getFormatMoney(((item.getProfit())/item.price * 100))
             }}%
           </div>
         </div>

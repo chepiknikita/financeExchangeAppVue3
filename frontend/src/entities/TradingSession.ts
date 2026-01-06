@@ -4,7 +4,7 @@ export interface ITradingSession {
   isTrading: boolean;
 }
 
-export default class TradingSession implements ITradingSession {
+export class TradingSession implements ITradingSession {
   start: string;
   end: string;
   isTrading: boolean;
@@ -17,7 +17,7 @@ export default class TradingSession implements ITradingSession {
 
   public toTimestampObject() {
     return {
-      date: [+this.start, +this.end],
+      date: [+new Date(this.start), +new Date(this.end)],
       isTrading: this.isTrading,
     };
   }
@@ -28,5 +28,11 @@ export default class TradingSession implements ITradingSession {
       end: new Date(obj.date[1]).toISOString(),
       isTrading: obj.isTrading,
     };
+  }
+
+  public update(data: ITradingSession) {
+    this.start = data.start;
+    this.end = data.end;
+    this.isTrading = data.isTrading;
   }
 }

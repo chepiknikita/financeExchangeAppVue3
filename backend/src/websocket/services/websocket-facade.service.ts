@@ -16,8 +16,8 @@ export class WebSocketFacadeService implements OnModuleInit {
 
   onModuleInit() {
     this.services.set('assets', this.assetSubscriptionService);
-    this.services.set('tradingSession', this.tradingSessionSubscriptionService);
     this.services.set('orders', this.orderSubscriptionService);
+    this.services.set('trading-session', this.tradingSessionSubscriptionService);
   }
 
   handleConnection(client: Socket): void {

@@ -35,6 +35,7 @@
           <finance-table
             :headers="headers"
             :items="stocks"
+            :traiding-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -45,6 +46,7 @@
           <finance-table
             :headers="headers"
             :items="metals"
+            :traiding-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -58,12 +60,14 @@ import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ApiFactory } from "@/api";
 import { Asset, AssetType } from "@/entities/Asset";
-import userAssets from '@/composables/useAssets';
+import useAssets from '@/composables/useAssets';
 import FinanceTable from "@/components/UI/tables/FinanceTable.vue";
+import useTradingSession from '@/composables/useTradingSession';
 
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const { subscribeToAssets, refrashAssets } = userAssets();
+const { subscribeToAssets, refrashAssets } = useAssets();
+const { loadTradingSession, session } = useTradingSession();
 
 const loading = ref(true);
 const tab = ref(null);
@@ -81,6 +85,7 @@ const headers = [
 ];
 
 onMounted(async () => {
+  await loadTradingSession();
   await loadAssets();
   subscribeToAssets();
   loading.value = false;

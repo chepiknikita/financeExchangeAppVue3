@@ -85,7 +85,7 @@ import { ApiFactory } from "@/api";
 import { formatMoneyAmount } from "@/utilities/helpers";
 import { ru } from 'date-fns/locale';
 import { User } from "@/entities/User";
-import TradingSession from "@/entities/TradingSession";
+import { TradingSession } from "@/entities/TradingSession";
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
@@ -118,7 +118,6 @@ onMounted(async () => {
     .filter((v) => v.id !== userId)
     .map((v) => new User(v));
   await loadTradingSession();
-  snapshot.value = JSON.stringify(model.value);
   loading.value = false;
 });
 
@@ -149,6 +148,7 @@ const loadTradingSession = async () => {
     marketState.value = new TradingSession(loadedMarket);
     model.value = marketState.value.toTimestampObject();
   }
+  snapshot.value = JSON.stringify(model.value);
 }
 </script>
 

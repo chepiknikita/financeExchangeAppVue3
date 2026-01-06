@@ -4,7 +4,7 @@ export function useWebSocket() {
   const websocketService = ApiFactory.createWebSocketService();
   const unsubscribeCallbacks: (() => void)[] = [];
   const subscribers: Map<string, any> = new Map();
-  type Event = "asset" | "tradingSession" | "order" | null;
+  type Event = "asset" | "trading-session" | "order" | null;
 
   const subscribe = (
     event: Event,

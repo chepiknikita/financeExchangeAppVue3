@@ -6,7 +6,7 @@ import { SubscriptionManagerService } from './subscription-manager.service';
 
 @Injectable()
 export class TradingSessionSubscriptionService implements IWebSocketService {
-  private readonly CHANNEL_TRADING_SESSION = 'tradingSession';
+  private readonly CHANNEL_TRADING_SESSION = 'trading-session';
 
   constructor(
     private subscriptionManager: SubscriptionManagerService,
@@ -25,17 +25,23 @@ export class TradingSessionSubscriptionService implements IWebSocketService {
   }
 
   handleSubscribe(client: Socket, data: any): void {
-    console.log(
-      `Trading session service: Client ${client.id} subscription request:`,
-      data,
-    );
+    const { type } = data;
+    if (type === 'trading-session') {
+      this.subscriptionManager.subscribe(client.id, this.CHANNEL_TRADING_SESSION);
+      console.log(
+        `Trading session service: Client ${client.id} manually subscribed to trading session`,
+      );
+    }
   }
 
   handleUnsubscribe(client: Socket, data: any): void {
-    console.log(
-      `Trading session service: Client ${client.id} unsubscription request:`,
-      data,
-    );
+    const { type } = data;
+    if (type === 'trading-session') {
+      this.subscriptionManager.unsubscribe(client.id, this.CHANNEL_TRADING_SESSION);
+      console.log(
+        `Trading session service: Client ${client.id} unsubscribed from trading session`,
+      );
+    }
   }
 
   async broadcastTradingSessionStatus(status: any): Promise<void> {

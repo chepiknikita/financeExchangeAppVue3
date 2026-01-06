@@ -1,18 +1,47 @@
-import { useWebSocket } from "@/composables/useWebSocket";
-import type TradingSession from "@/entities/TradingSession";
+import { ApiFactory } from "@/api";
+import { TradingSession } from "@/entities/TradingSession";
+import { useWebSocket } from "./useWebSocket";
+import { useNotifications } from "./useNotifications";
 
 export default function useTradingSession() {
+  const tradingSessionService = ApiFactory.createTradingSessionService();
   const { subscribe } = useWebSocket();
+  const { info } = useNotifications();
+  const session = ref<TradingSession | null>(null);
 
-  const updatedTradingSession = ref<TradingSession | null>(null);
+  async function initSubscription() {
+    subscribe("trading-session", {}, "trading-session-status", (data) => {
+      console.log("Прослушивание канала - trading-session-status", data);
+      if (data) {
+        session.value?.update(data);
+        info(
+          `Торги ${data.isTrading ? "запущены" : "отстановлены"}`,
+          "Информация"
+        );
+      }
+    });
+  }
 
-  subscribe(null, null, "trading-session-status", (data) => {
-    if (data?.spec?.args?.data) {
-      updatedTradingSession.value = data.spec.args.data;
+  async function loadTradingSession() {
+    const loadedSession = await tradingSessionService.getStatus();
+    if (loadedSession) {
+      session.value = new TradingSession(loadedSession);
     }
-  });
+    initSubscription();
+  }
+
+  async function updateStatus(timestamp: {
+    date: number[];
+    isTrading: boolean;
+  }) {
+    await tradingSessionService.updateStatus(
+      TradingSession.fromTimestampObject(timestamp)
+    );
+  }
 
   return {
-    updatedTradingSession,
+    session,
+    loadTradingSession,
+    updateStatus,
   };
 }

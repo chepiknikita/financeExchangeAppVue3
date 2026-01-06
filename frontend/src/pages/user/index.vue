@@ -17,6 +17,7 @@
         is-total
         :headers="columns"
         :items="user.mappedAssets"
+        :traiding-status="session?.isTrading"
         @click:row="onSelectAsset"
       />
     </div>
@@ -32,22 +33,25 @@ import { useRouter } from 'vue-router';
 import { ApiFactory } from '@/api';
 import { User } from '@/entities/User';
 import type { Asset } from '@/entities/Asset';
-import userAssets from '@/composables/useAssets';
+import useAssets from '@/composables/useAssets';
 import TheUserTotalBalance from '@/components/user/TheUserTotalBalance.vue';
 import TheUserBalance from '@/components/user/TheUserBalance.vue';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
 import columns from './columns';
+import useTradingSession from '@/composables/useTradingSession';
 
 const router = useRouter();
 const userService = ApiFactory.createUserService();
 const assetService = ApiFactory.createAssetsService();
-const { subscribeToAssets, refrashAssets } = userAssets();
+const { subscribeToAssets, refrashAssets } = useAssets();
+const { loadTradingSession, session } = useTradingSession();
 
 const loading = ref(true);
 const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
 const user = ref<User | null>(null);
 
 onMounted(async () => {
+  await loadTradingSession();
   await loadUserAssets();
   subscribeToAssets();
   loading.value = false;

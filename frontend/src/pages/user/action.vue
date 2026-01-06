@@ -28,22 +28,22 @@
     <div v-else class="page-content-title">
       <the-asset-info
         :asset-name="asset ? asset.name : ''"
-        :asset-price="assetPrice"
+        :asset-price="asset?.price"
         :asset-profit="+assetProfit"
-        :traiding-status="marketState?.isTrading"
+        :traiding-status="session?.isTrading"
       />
       <the-user-asset-info
         :balance="user ? +user.currentBalance : 0"
         :available-quantity="asset?.availableQuantity ? asset.availableQuantity : 0"
         :quantity-asset-exits="quantityAssetExits"
         :result="result"
-        :trading-end-time="marketState?.end"
+        :trading-end-time="session?.end"
       >
         <the-user-asset-action
           v-model:price="price"
           v-model:quantity="quantity"
           :status="status"
-          :traiding-status="marketState?.isTrading"
+          :traiding-status="session?.isTrading"
           @on-order="createOrder"
         />
       </the-user-asset-info>
@@ -55,25 +55,22 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ApiFactory } from "@/api";
-import useTradingSession from "@/composables/useTradingSession";
-import userAssets from '@/composables/useAssets';
+import useAssets from '@/composables/useAssets';
 import { Asset } from "@/entities/Asset";
-import TradingSession from "@/entities/TradingSession";
 import { User } from "@/entities/User";
-import { OrderType } from "@/entities/Order";
-import Order from "@/entities/Order";
+import { Order, OrderType } from "@/entities/Order";
 import { useNotifications } from "@/composables/useNotifications";
+import useTradingSession from '@/composables/useTradingSession';
 
 const assetService = ApiFactory.createAssetsService();
 const userService = ApiFactory.createUserService();
-const tradingSessionService = ApiFactory.createTradingSessionService();
 const orderService = ApiFactory.createOrderService();
+const { loadTradingSession, session } = useTradingSession();
 
 const loading = ref(true);
 
 const route = useRoute();
-const { updatedTradingSession } = useTradingSession();
-const { selectAsset, selectedAssetId, assetPrice } = userAssets();
+const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
 const { info } = useNotifications();
 
 const status = route.query?.mode as OrderType;
@@ -82,7 +79,6 @@ selectedAssetId.value = typeof route.query?.id === "string" ? +route.query?.id :
 
 const user = ref<User | null>(null);
 const asset = ref<Asset | null>(null);
-const marketState = ref<TradingSession | null>(null);
 
 const quantityAssetExits = ref(0);
 const quantity = ref<string>("");
@@ -93,14 +89,10 @@ onMounted(async () => {
   if (loadedUser) {
     user.value = new User(loadedUser);
   }
-  const loadedMarket = await tradingSessionService.getStatus();
-  if (loadedMarket) {
-    marketState.value = new TradingSession(loadedMarket);
-  }
+  await loadTradingSession();
   if (selectedAssetId.value) {
     const loadedAsset = await assetService.getById(selectedAssetId.value);
     asset.value = loadedAsset ? new Asset(loadedAsset) : null;
-    assetPrice.value = asset.value?.price ?? 0;
     selectAsset(selectedAssetId.value);
     quantityAssetExits.value = user.value?.getQuantityByAssetId(selectedAssetId.value) ?? 0;
   }
@@ -112,14 +104,16 @@ const assetProfit = computed(() => {
   return asset.value?.getProfitPercent().toFixed(2) ?? 0;
 });
 
-watch(updatedTradingSession, (v) => {
-  marketState.value = v;
-});
-
 const result = computed(() => {
   return quantity.value && price.value
     ? +(price.value * +quantity.value).toFixed(2)
     : null;
+});
+
+watch(updatedAsset, (v) => {
+  if (v) {
+    asset.value?.updatePrice(v);
+  }
 });
 
 const createOrder = async () => {

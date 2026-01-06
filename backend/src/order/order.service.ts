@@ -18,7 +18,7 @@ export class OrderService {
     private webSocketFacade: WebSocketFacadeService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(createOrderDto: CreateOrderDto) {
     const tradingSession = await this.tradingSessionService.getStatus();
     if (!tradingSession.isTrading) {
       throw new BadRequestException('Торги остановлены');
@@ -28,7 +28,7 @@ export class OrderService {
     const asset = await this.assetService.getById(createOrderDto.assetId);
 
     const order =
-      createOrderDto.type === 'BUY'
+      createOrderDto.type === OrderType.Buy
         ? await this.handleBuyOrder(user, asset, createOrderDto.quantity)
         : await this.handleSellOrder(user, asset, createOrderDto.quantity);
 
@@ -46,7 +46,7 @@ export class OrderService {
     user: any,
     asset: Asset,
     quantity: number,
-  ): Promise<Order> {
+  ) {
     const totalCost = asset.price * quantity;
 
     if (user.currentBalance < totalCost) {
@@ -83,7 +83,7 @@ export class OrderService {
         },
       });
 
-      await this.updateUserAsset(tx, user.id, asset.id, quantity, updatedAsset.price, 'BUY');
+      await this.updateUserAsset(tx, user.id, asset.id, quantity, updatedAsset.price, OrderType.Buy);
       await this.broadcastAssetUpdateAfterOrder(asset.id, updatedAsset);
 
       return order;
@@ -94,7 +94,7 @@ export class OrderService {
     user: any,
     asset: Asset,
     quantity: number,
-  ): Promise<Order> {
+  ) {
     const userAsset = await this.prisma.userAsset.findUnique({
       where: {
         userId_assetId: {
@@ -132,7 +132,7 @@ export class OrderService {
         data: { availableQuantity: { increment: quantity } },
       });
 
-      await this.updateUserAsset(tx, user.id, asset.id, -quantity, updatedAsset.price, 'SELL');
+      await this.updateUserAsset(tx, user.id, asset.id, -quantity, updatedAsset.price, OrderType.Sell);
       await this.broadcastAssetUpdateAfterOrder(asset.id, updatedAsset);
 
       return order;
@@ -156,9 +156,8 @@ export class OrderService {
       },
     });
 
-    const averageBuyPrice = this.getAverageBuyPrice(existingUserAsset, quantity, buyPrice, status);
-
     if (existingUserAsset) {
+      const averageBuyPrice = this.getAverageBuyPrice(existingUserAsset, quantity, buyPrice, status);
       const newQuantity = existingUserAsset.quantity + quantity;
       if (newQuantity === 0) {
         await tx.userAsset.delete({
@@ -189,19 +188,20 @@ export class OrderService {
           userId,
           assetId,
           quantity,
-          averageBuyPrice,
+          averageBuyPrice: buyPrice,
         },
       });
     }
   }
 
-  private getAverageBuyPrice(userAsset: UserAsset, quantity: number, buyPrice: number, status: 'BUY' | 'SELL'): number {
+  private getAverageBuyPrice(userAsset: UserAsset, quantity: number, buyPrice: number, status: OrderType): number {
     let averageBuyPrice = userAsset.averageBuyPrice;
+    const currentQuantity = userAsset.quantity || 0;
 
-    if (status === 'BUY') {
-      const currentTotalCost = userAsset.quantity * userAsset.averageBuyPrice;
-      const totalValue = quantity + buyPrice;
-      averageBuyPrice = (currentTotalCost + totalValue) / (userAsset.quantity + quantity);
+    if (status === OrderType.Buy) {
+      const currentTotalCost = currentQuantity * averageBuyPrice;
+      const totalValue = quantity * buyPrice;
+      averageBuyPrice = (currentTotalCost + totalValue) / (currentQuantity + quantity);
     }
     return averageBuyPrice;
   }
@@ -214,7 +214,7 @@ export class OrderService {
     });
   }
 
-  async getUserOrders(userId: number): Promise<Order[]> {
+  async getUserOrders(userId: number) {
     return this.prisma.order.findMany({
       where: { userId },
       include: { asset: true },
@@ -222,7 +222,7 @@ export class OrderService {
     });
   }
 
-  async getAll(): Promise<Order[]> {
+  async getAll() {
     return this.prisma.order.findMany({
       include: { asset: true, user: true },
       orderBy: { createdAt: 'desc' },

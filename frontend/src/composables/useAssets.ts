@@ -1,22 +1,18 @@
 import { useWebSocket } from "@/composables/useWebSocket";
-import { Asset, type PriceHistory } from "@/entities/Asset";
+import { type IAsset, type PriceHistory } from "@/entities/Asset";
 
-export default function userAssets() {
+export default function useAssets() {
   const { subscribe } = useWebSocket();
 
   const selectedAssetId = ref<number | null>(null);
-  const updatedAsset = ref<Asset | null>(null);
+  const updatedAsset = ref<{ asset: IAsset; price: PriceHistory } | null>(null);
   const refrashAssets = ref<boolean>(false);
-  const assetPrice = ref<number>(0);
-  const history = ref<PriceHistory | null>(null);
 
   const subscribeToAsset = (assetId: number) => {
-    subscribe("asset", assetId, `asset-update`, (data) => {
+    subscribe("asset", assetId, "asset-update", (data) => {
       console.log(`Прослушивание канала -  assets:${assetId}`, data);
-      if (data.asset) {
-        updatedAsset.value = new Asset(data.asset);
-        assetPrice.value = data.asset.price;
-        history.value = data.price ?? null;
+      if (data) {
+        updatedAsset.value = data;
       }
     });
   };
@@ -43,7 +39,5 @@ export default function userAssets() {
     updatedAsset,
     selectedAssetId,
     refrashAssets,
-    assetPrice,
-    history,
   };
 }

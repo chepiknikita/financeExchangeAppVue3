@@ -27,7 +27,7 @@ export interface IOrder {
   };
 }
 
-export default class Order implements IOrder {
+export class Order implements IOrder {
   id: number;
   type: OrderType;
   quantity: number;

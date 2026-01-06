@@ -90,4 +90,18 @@ export class WebSocketGateway
       userId,
     });
   }
+
+  @SubscribeMessage('trading-session:subscribe')
+  handleTradingSessionSubscribe(client: Socket) {
+    this.webSocketFacade.handleSubscribe(client, 'trading-session', {
+      type: 'trading-session',
+    });
+  }
+
+  @SubscribeMessage('trading-session:unsubscribe')
+  handleTradingSessionUnsubscribe(client: Socket) {
+    this.webSocketFacade.handleUnsubscribe(client, 'trading-session', {
+      type: 'trading-session',
+    });
+  }
 }

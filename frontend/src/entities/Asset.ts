@@ -68,6 +68,14 @@ export class Asset implements IAsset {
     return (this.price - this.averageBuyPrice) * this.quantity;
   }
 
+  public updatePrice(data: { asset: IAsset, price: PriceHistory }) {
+    this.id = data.asset.id;
+    this.price = data.asset.price;
+    this.closingPrice = data.asset.closingPrice;
+    this.availableQuantity = data.asset.availableQuantity;
+    this.history.unshift(data.price);
+  }
+
   static getFormatMoney(value: number, fixed = 2) {
     return +formatMoneyAmount(value.toFixed(fixed));
   }

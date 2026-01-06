@@ -24,9 +24,9 @@
   >
     <the-asset-info
       :asset-name="asset.name"
-      :asset-price="assetPrice"
+      :asset-price="asset.price"
       :asset-profit="+assetProfit"
-      :traiding-status="marketState?.isTrading"
+      :traiding-status="session?.isTrading"
     />
     <the-asset-chart :priceHistory="asset.history" />
     <the-user-asset :asset="asset" />
@@ -46,20 +46,17 @@ import { OrderType } from "@/entities/Order";
 import TheAssetInfo from "@/components/assets/TheAssetInfo.vue";
 import TheAssetChart from "@/components/assets/TheAssetChart.vue";
 import TheUserAsset from "@/components/assets/TheUserAsset.vue";
-import useTradingSession from "@/composables/useTradingSession";
-import userAssets from '@/composables/useAssets';
-import TradingSession from "@/entities/TradingSession";
-import { Asset, type PriceHistory } from "@/entities/Asset";
+import useAssets from '@/composables/useAssets';
+import useTradingSession from '@/composables/useTradingSession';
+import { Asset } from "@/entities/Asset";
 
+const loading = ref(true);
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const tradingSessionService = ApiFactory.createTradingSessionService();
-const { updatedTradingSession } = useTradingSession();
-const { selectAsset, selectedAssetId, assetPrice, history } = userAssets();
-const loading = ref(true);
+const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
+const { loadTradingSession, session } = useTradingSession();
 
 selectedAssetId.value = router.currentRoute.value.params.id;
-const marketState = ref<TradingSession | null>(null);
 const asset = ref<Asset | null>(null);
 
 const assetProfit = computed(() => {
@@ -67,31 +64,23 @@ const assetProfit = computed(() => {
 });
 
 onMounted(async () => {
-  const loadedMarket = await tradingSessionService.getStatus();
-  if (loadedMarket) {
-    marketState.value = new TradingSession(loadedMarket);
-  }
+  await loadTradingSession();
   if (selectedAssetId.value) {
     const loadedAsset = await assetService.getById(selectedAssetId.value);
     if (loadedAsset) {
       asset.value = new Asset(loadedAsset);
       asset.value.setHistory(await assetService.getAssetHistory(selectedAssetId.value))
     }
-    assetPrice.value = asset.value?.price ?? 0;
     selectAsset(selectedAssetId.value);
   }
   loading.value = false;
 });
 
-watch(updatedTradingSession, (v) => {
-  marketState.value = v;
-});
-
-watch(history, (v) => {
+watch(updatedAsset, (v) => {
   if (v) {
-    asset.value?.history.unshift(v);
+    asset.value?.updatePrice(v);
   }
-})
+});
 
 const onSell = () => {
   router.push({
