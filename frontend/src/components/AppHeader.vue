@@ -5,7 +5,7 @@
   >
     <v-list class="nav-list">
       <v-list-item
-        v-for="item in barItmes"
+        v-for="item in barItems"
         :key="item.name"
         class="nav-item"
         height="30"
@@ -33,8 +33,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useUserStore } from '@/stores/useUserStore';
 
-const role = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.role;
+const userStore = useUserStore();
 
 const pathsUser = [
   {
@@ -61,7 +62,7 @@ const additionalItems = [
   }
 ];
 
-const barItmes = computed(() => role === 'USER' ? pathsUser : pathsAdmin);
+const barItems = computed(() => userStore.role === 'USER' ? pathsUser : pathsAdmin);
 </script>
 
 <style scoped>

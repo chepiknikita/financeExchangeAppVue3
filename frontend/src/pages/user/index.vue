@@ -17,7 +17,7 @@
         is-total
         :headers="columns"
         :items="user.mappedAssets"
-        :traiding-status="session?.isTrading"
+        :trading-status="session?.isTrading"
         @click:row="onSelectAsset"
       />
     </div>
@@ -39,15 +39,17 @@ import TheUserBalance from '@/components/user/TheUserBalance.vue';
 import FinanceTable from '@/components/UI/tables/FinanceTable.vue';
 import columns from './columns';
 import useTradingSession from '@/composables/useTradingSession';
+import { useUserStore } from '@/stores/useUserStore';
 
 const router = useRouter();
+const userStore = useUserStore();
 const userService = ApiFactory.createUserService();
 const assetService = ApiFactory.createAssetsService();
-const { subscribeToAssets, refrashAssets } = useAssets();
+const { subscribeToAssets, refreshAssets } = useAssets();
 const { loadTradingSession, session } = useTradingSession();
 
 const loading = ref(true);
-const userId = JSON.parse(atob(sessionStorage.getItem('user') ?? ''))?.id;
+const userId = userStore.id;
 const user = ref<User | null>(null);
 
 onMounted(async () => {
@@ -58,6 +60,7 @@ onMounted(async () => {
 });
 
 const loadUserAssets = async () => {
+  if (!userId) return;
   const loadedUser = await userService.getById(userId);
   if (loadedUser) {
     user.value = new User(loadedUser);
@@ -65,10 +68,10 @@ const loadUserAssets = async () => {
   }
 }
 
-watch(refrashAssets, async (v) => {
+watch(refreshAssets, async (v) => {
   if (v) {
     await loadUserAssets();
-    refrashAssets.value = false;
+    refreshAssets.value = false;
   }
 })
 

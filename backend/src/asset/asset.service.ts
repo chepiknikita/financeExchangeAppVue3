@@ -22,7 +22,7 @@ export class AssetService {
     return asset;
   }
 
-  async getById(id: number): Promise<Asset> {
+  async getById(id: number): Promise<Asset | null> {
     return await this.prisma.asset.findUnique({
       where: { id },
       include: {
@@ -88,18 +88,35 @@ export class AssetService {
 
     for (const asset of assets) {
       const changePercent = (Math.random() * 10 - 5) / 100;
-      const newPrice = Math.max(0.01, asset.price * (1 + changePercent));
+      const newPrice = parseFloat(Math.max(0.01, asset.price * (1 + changePercent)).toFixed(2));
 
-      await this.updateAssetPrice(asset.id, parseFloat(newPrice.toFixed(2)));
+      await this.prisma.$transaction(async (tx) => {
+        const updatedAsset = await tx.asset.update({
+          where: { id: asset.id },
+          data: { price: newPrice },
+        });
+        const priceHistory = await tx.priceHistory.create({
+          data: { assetId: asset.id, price: newPrice },
+        });
+        await this.webSocketFacade.broadcastAssetUpdate(asset.id, {
+          assetId: asset.id,
+          asset: updatedAsset,
+          price: priceHistory,
+          timestamp: new Date(),
+        });
+      });
     }
     await this.webSocketFacade.broadcastAssetsUpdate();
   }
 
-   async updateClosingPrices(): Promise<void> {
+  async updateClosingPrices(): Promise<void> {
     const assets = await this.prisma.asset.findMany();
 
     for (const asset of assets) {
-      await this.updateAssetClosingPrice(asset.id);
+      await this.prisma.asset.update({
+        where: { id: asset.id },
+        data: { closingPrice: asset.price },
+      });
     }
     await this.webSocketFacade.broadcastAssetsUpdate();
   }
@@ -108,9 +125,7 @@ export class AssetService {
     const asset = await this.getEntityById(assetId);
     await this.prisma.asset.update({
       where: { id: assetId },
-      data: {
-        closingPrice: asset.price,
-      },
+      data: { closingPrice: asset.price },
     });
   }
 }

@@ -1,16 +1,17 @@
 import { ApiFactory } from "@/api";
+import type { WebSocketPayload } from "@/api/interfaces/websocket";
 
 export function useWebSocket() {
   const websocketService = ApiFactory.createWebSocketService();
   const unsubscribeCallbacks: (() => void)[] = [];
-  const subscribers: Map<string, any> = new Map();
+  const subscribers: Map<string, WebSocketPayload> = new Map();
   type Event = "asset" | "trading-session" | "order" | null;
 
   const subscribe = (
     event: Event,
-    payload: any,
+    payload: WebSocketPayload,
     channel: string,
-    callback: (data: any) => void
+    callback: (data: unknown) => void
   ): void => {
     if (event && !subscribers.has(event)) {
       subscribers.set(event, payload);
@@ -21,7 +22,7 @@ export function useWebSocket() {
   };
 
   const unsubscribeAll = (): void => {
-    Array.from(subscribers.entries()).forEach(([key, val]: [string, any]) => {
+    Array.from(subscribers.entries()).forEach(([key, val]: [string, WebSocketPayload]) => {
       websocketService.sendSubscription(`${key}:unsubscribe`, val);
     });
     unsubscribeCallbacks.forEach((unsubscribe) => unsubscribe());

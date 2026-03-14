@@ -48,6 +48,7 @@ import { ApiFactory } from '@/api';
 import { useRouter } from 'vue-router';
 import { definePage } from 'vue-router/auto';
 import { User } from '@/entities/User';
+import { useUserStore } from '@/stores/useUserStore';
 
 definePage({
   meta: {
@@ -57,6 +58,7 @@ definePage({
 
 const loading = ref(true);
 const router = useRouter();
+const userStore = useUserStore();
 const userService = ApiFactory.createUserService();
 const users = ref<User[]>([]);
 
@@ -70,13 +72,13 @@ const headers = [
     title: 'Логин',
     key: 'login',
     width: '20%',
-    align: 'end',
+    align: 'end' as const,
   },
   {
     title: 'Баланс',
     key: 'currentBalance',
     width: '30%',
-    align: 'end',
+    align: 'end' as const,
   },
 ];
 
@@ -86,7 +88,7 @@ onMounted(async () => {
 });
 
 const onSelectUser = (_: MouseEvent, row: { item: User }) => {
-  sessionStorage.setItem('user', btoa(JSON.stringify({ id: row.item.id, role: row.item.role })));
+  userStore.setUser(row.item.id, row.item.role);
   router.push(row.item.role);
 };
 </script>

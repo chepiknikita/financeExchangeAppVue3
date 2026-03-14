@@ -6,7 +6,7 @@ export default function useAssets() {
 
   const selectedAssetId = ref<number | null>(null);
   const updatedAsset = ref<{ asset: IAsset; price: PriceHistory } | null>(null);
-  const refrashAssets = ref<boolean>(false);
+  const refreshAssets = ref<boolean>(false);
 
   const subscribeToAsset = (assetId: number) => {
     subscribe("asset", assetId, "asset-update", (data) => {
@@ -21,7 +21,7 @@ export default function useAssets() {
     subscribe(null, null, "assets-update", (data) => {
       console.log("Прослушивание канала - assets-update", data);
       if (data?.type === "assets-update") {
-        refrashAssets.value = true;
+        refreshAssets.value = true;
       }
     });
   };
@@ -38,6 +38,6 @@ export default function useAssets() {
     selectAsset,
     updatedAsset,
     selectedAssetId,
-    refrashAssets,
+    refreshAssets,
   };
 }

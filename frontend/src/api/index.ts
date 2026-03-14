@@ -18,6 +18,10 @@ const API_URL = import.meta.env.VITE_SERVER_API_URL || "http://localhost:8080";
 
 export class ApiFactory {
   private static apiClient: AxiosInstance;
+  private static userService: UserService;
+  private static assetsService: AssetsService;
+  private static tradingSessionService: TradingSessionService;
+  private static orderService: OrderService;
 
   private static initialize() {
     if (!this.apiClient) {
@@ -27,28 +31,36 @@ export class ApiFactory {
 
   public static createUserService(): UserService {
     this.initialize();
-    const repository = new UserRepository(new UserEndpoint(this.apiClient));
-    return new UserService(repository);
+    if (!this.userService) {
+      this.userService = new UserService(new UserRepository(new UserEndpoint(this.apiClient)));
+    }
+    return this.userService;
   }
 
   public static createAssetsService(): AssetsService {
     this.initialize();
-    const repository = new AssetsRepository(new AssetsEndpoint(this.apiClient));
-    return new AssetsService(repository);
+    if (!this.assetsService) {
+      this.assetsService = new AssetsService(new AssetsRepository(new AssetsEndpoint(this.apiClient)));
+    }
+    return this.assetsService;
   }
 
   public static createTradingSessionService(): TradingSessionService {
     this.initialize();
-    const repository = new TradingSessionRepository(
-      new TradingSessionEndpoint(this.apiClient)
-    );
-    return new TradingSessionService(repository);
+    if (!this.tradingSessionService) {
+      this.tradingSessionService = new TradingSessionService(
+        new TradingSessionRepository(new TradingSessionEndpoint(this.apiClient))
+      );
+    }
+    return this.tradingSessionService;
   }
 
   public static createOrderService(): OrderService {
     this.initialize();
-    const repository = new OrderRepository(new OrderEndpoint(this.apiClient));
-    return new OrderService(repository);
+    if (!this.orderService) {
+      this.orderService = new OrderService(new OrderRepository(new OrderEndpoint(this.apiClient)));
+    }
+    return this.orderService;
   }
 
   public static createWebSocketService(): WebSocketService {

@@ -61,8 +61,9 @@ export class User implements IUser {
   }
 
   public calculateProfitPercentage() {
+    if (this.initialBalance === 0) return 0;
     const totalBalance = this.calculateTotalBalance();
     const profit = totalBalance - this.initialBalance;
-    return (profit/this.initialBalance) * 100;
+    return (profit / this.initialBalance) * 100;
   }
 }

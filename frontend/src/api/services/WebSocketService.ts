@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { ref } from "vue";
+import type { Subscription, WebSocketMessage, WebSocketPayload } from "@/api/interfaces/websocket";
 
 const SOCKET_URL =
   import.meta.env.VITE_SERVER_SOCKET_URL || "http://localhost:8082/ws";
@@ -56,12 +57,12 @@ export class WebSocketService {
       this.isConnected.value = false;
     });
 
-    this.socket.onAny((event: string, data: any) => {
+    this.socket.onAny((event: string, data: unknown) => {
       this.notifySubscribers(event, data);
     });
   }
 
-  private notifySubscribers(event: string, data: any) {
+  private notifySubscribers(event: string, data: unknown) {
     const subs = this.subscriptions.get(event) || [];
     subs.forEach((subscription) => {
       try {
@@ -76,7 +77,7 @@ export class WebSocketService {
    * Подписаться на событие
    * @returns Функция для отписки
    */
-  public subscribe(event: string, callback: (data: any) => void): () => void {
+  public subscribe(event: string, callback: (data: unknown) => void): () => void {
     const subscriptionId = (++this.subscriptionIdCounter).toString();
     const subscription: Subscription = { event, callback, id: subscriptionId };
 
@@ -135,7 +136,7 @@ export class WebSocketService {
     this.isConnected.value = false;
   }
 
-  public sendSubscription(event: string, payload: any = {}): void {
+  public sendSubscription(event: string, payload: WebSocketPayload = {}): void {
     const message = {
       type: event,
       payload,

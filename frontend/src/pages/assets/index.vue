@@ -35,7 +35,7 @@
           <finance-table
             :headers="headers"
             :items="stocks"
-            :traiding-status="session?.isTrading"
+            :trading-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -46,7 +46,7 @@
           <finance-table
             :headers="headers"
             :items="metals"
-            :traiding-status="session?.isTrading"
+            :trading-status="session?.isTrading"
             @click:row="onSelectAsset"
           />
         </v-tabs-window-item>
@@ -66,7 +66,7 @@ import useTradingSession from '@/composables/useTradingSession';
 
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const { subscribeToAssets, refrashAssets } = useAssets();
+const { subscribeToAssets, refreshAssets } = useAssets();
 const { loadTradingSession, session } = useTradingSession();
 
 const loading = ref(true);
@@ -97,10 +97,10 @@ const loadAssets = async () => {
   metals.value = assets.filter((v) => v.type === AssetType.Metal);
 }
 
-watch(refrashAssets, async (v) => {
+watch(refreshAssets, async (v) => {
   if (v) {
     await loadAssets();
-    refrashAssets.value = false;
+    refreshAssets.value = false;
   }
 });
 
