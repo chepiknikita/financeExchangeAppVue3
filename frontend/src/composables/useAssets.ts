@@ -2,7 +2,7 @@ import { useWebSocket } from "@/composables/useWebSocket";
 import { type IAsset, type PriceHistory } from "@/entities/Asset";
 
 export default function useAssets() {
-  const { subscribe } = useWebSocket();
+  const { subscribe, unsubscribeAll } = useWebSocket();
 
   const selectedAssetId = ref<number | null>(null);
   const updatedAsset = ref<{ asset: IAsset; price: PriceHistory } | null>(null);
@@ -39,5 +39,6 @@ export default function useAssets() {
     updatedAsset,
     selectedAssetId,
     refreshAssets,
+    unsubscribeAll,
   };
 }

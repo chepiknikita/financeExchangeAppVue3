@@ -29,7 +29,7 @@ export class WebSocketService {
 
   private init() {
     this.socket = io(SOCKET_URL, {
-      transports: ["websocket", "polling"],
+      transports: ["websocket"],
     });
 
     this.connect();

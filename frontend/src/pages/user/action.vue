@@ -30,7 +30,7 @@
         :asset-name="asset ? asset.name : ''"
         :asset-price="asset?.price"
         :asset-profit="+assetProfit"
-        :traiding-status="session?.isTrading"
+        :trading-status="session?.isTrading"
       />
       <the-user-asset-info
         :balance="user ? +user.currentBalance : 0"
@@ -43,7 +43,7 @@
           v-model:price="price"
           v-model:quantity="quantity"
           :status="status"
-          :traiding-status="session?.isTrading"
+          :trading-status="session?.isTrading"
           @on-order="createOrder"
         />
       </the-user-asset-info>
@@ -61,20 +61,21 @@ import { User } from "@/entities/User";
 import { Order, OrderType } from "@/entities/Order";
 import { useNotifications } from "@/composables/useNotifications";
 import useTradingSession from '@/composables/useTradingSession';
+import { useUserStore } from "@/stores/useUserStore";
 
 const assetService = ApiFactory.createAssetsService();
 const userService = ApiFactory.createUserService();
 const orderService = ApiFactory.createOrderService();
 const { loadTradingSession, session } = useTradingSession();
+const { selectAsset, selectedAssetId, updatedAsset, unsubscribeAll } = useAssets();
+const userStore = useUserStore();
 
 const loading = ref(true);
 
 const route = useRoute();
-const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
-const { info } = useNotifications();
+const { info, error } = useNotifications();
 
 const status = route.query?.mode as OrderType;
-const userId = JSON.parse(atob(sessionStorage.getItem("user") ?? ""))?.id;
 selectedAssetId.value = typeof route.query?.id === "string" ? +route.query?.id : 0;
 
 const user = ref<User | null>(null);
@@ -85,6 +86,9 @@ const quantity = ref<string>("");
 const price = ref<number>();
 
 onMounted(async () => {
+  const userId = userStore.id;
+  if (!userId) return;
+
   const loadedUser = await userService.getById(userId);
   if (loadedUser) {
     user.value = new User(loadedUser);
@@ -116,7 +120,30 @@ watch(updatedAsset, (v) => {
   }
 });
 
+watch(() => session.value?.isTrading, (isTrading) => {
+  if (isTrading === false) {
+    unsubscribeAll();
+  }
+});
+
 const createOrder = async () => {
+  if (!user.value || !asset.value || !price.value) return;
+
+  const qty = +quantity.value;
+
+  if (status === OrderType.Buy) {
+    const total = qty * price.value;
+    if (total > user.value.currentBalance) {
+      error('Недостаточно средств для покупки', 'Ошибка');
+      return;
+    }
+  } else if (status === OrderType.Sell) {
+    if (qty > quantityAssetExits.value) {
+      error('Недостаточно активов для продажи', 'Ошибка');
+      return;
+    }
+  }
+
   const order = Order.getOrderRequest(
     status,
     user.value,
@@ -127,8 +154,7 @@ const createOrder = async () => {
     const saved = await orderService.create(order);
     if (saved) {
       const event = saved.type === OrderType.Buy ? 'Покупка' : 'Продажа';
-      const message = `${event} прошла успешно`;
-      info(message, 'Информация');
+      info(`${event} прошла успешно`, 'Информация');
     }
   }
 };

@@ -64,7 +64,7 @@ export class TradingSessionService {
     }
   }
 
-  @Cron('*/1 * * * *')
+  @Cron('* * * * *')
   async updateAssetPrices() {
     const tradingSession = await this.getStatus();
     if (tradingSession.isTrading) {

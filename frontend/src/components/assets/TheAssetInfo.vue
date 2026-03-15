@@ -8,7 +8,7 @@
     </div>
     <div
       class="text-body-1"
-      :class="{ 'growth': assetProfit > 0, 'fall': assetProfit < 0, 'blocker': !traidingStatus }"
+      :class="{ 'growth': assetProfit > 0, 'fall': assetProfit < 0, 'blocker': !tradingStatus }"
     >{{ assetProfit }}%
       (доходность)</div>
   </div>
@@ -22,12 +22,12 @@ withDefaults(
     assetName: string;
     assetPrice: number;
     assetProfit: number;
-    traidingStatus: boolean | undefined;
+    tradingStatus: boolean | undefined;
   }>(),
   {
     assetPrice: 0,
     assetProfit: 0,
-    traidingStatus: false,
+    tradingStatus: false,
   }
 );
 </script>

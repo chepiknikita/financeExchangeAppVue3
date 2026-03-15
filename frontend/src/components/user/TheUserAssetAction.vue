@@ -32,10 +32,10 @@
       width="250px"
       color="#ccc"
       class="text-none my-1 mx-2"
-      :disabled="!(quantity && traidingStatus)"
+      :disabled="!(quantity && tradingStatus)"
       @click="emit('onOrder')"
     >
-      {{ btnTitile }}
+      {{ btnTitle }}
     </v-btn>
   </div>
 </template>
@@ -48,17 +48,17 @@ const emit = defineEmits(['onOrder']);
 const props = withDefaults(
   defineProps<{
     status: OrderType,
-    traidingStatus: boolean | undefined;
+    tradingStatus: boolean | undefined;
   }>(),
   {
-    traidingStatus: false,
+    tradingStatus: false,
   }
 );
 
 const price = defineModel<number | undefined>("price", { default: undefined });
 const quantity = defineModel<string>("quantity", { default: "" });
 
-const btnTitile = props.status === OrderType.Sell ? "Продать" : "Купить";
+const btnTitle = props.status === OrderType.Sell ? "Продать" : "Купить";
 
 const validateKey = (event: KeyboardEvent): void => {
   if (!/^\d$/.test(event.key)) {

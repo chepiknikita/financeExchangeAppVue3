@@ -39,6 +39,7 @@
     "@nestjs/platform-express": "=11.0.0",
     "@nestjs/platform-socket.io": "=11.1.7",
     "@nestjs/schedule": "=6.0.1",
+    "@nestjs/throttler": "=6.5.0",
     "@nestjs/websockets": "=11.1.7",
     "@prisma/client": "=6.11.1",
     "or": "=0.2.0",
@@ -79,7 +80,11 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1",
+      "^generated/prisma$": "<rootDir>/../generated/prisma"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

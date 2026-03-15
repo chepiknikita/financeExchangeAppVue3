@@ -26,7 +26,7 @@
       :asset-name="asset.name"
       :asset-price="asset.price"
       :asset-profit="+assetProfit"
-      :traiding-status="session?.isTrading"
+      :trading-status="session?.isTrading"
     />
     <the-asset-chart :priceHistory="asset.history" />
     <the-user-asset :asset="asset" />
@@ -53,10 +53,10 @@ import { Asset } from "@/entities/Asset";
 const loading = ref(true);
 const router = useRouter();
 const assetService = ApiFactory.createAssetsService();
-const { selectAsset, selectedAssetId, updatedAsset } = useAssets();
+const { selectAsset, updatedAsset, unsubscribeAll } = useAssets();
 const { loadTradingSession, session } = useTradingSession();
 
-selectedAssetId.value = router.currentRoute.value.params.id;
+const assetId = +router.currentRoute.value.params.id;
 const asset = ref<Asset | null>(null);
 
 const assetProfit = computed(() => {
@@ -65,13 +65,13 @@ const assetProfit = computed(() => {
 
 onMounted(async () => {
   await loadTradingSession();
-  if (selectedAssetId.value) {
-    const loadedAsset = await assetService.getById(selectedAssetId.value);
+  if (assetId) {
+    const loadedAsset = await assetService.getById(assetId);
     if (loadedAsset) {
       asset.value = new Asset(loadedAsset);
-      asset.value.setHistory(await assetService.getAssetHistory(selectedAssetId.value))
+      asset.value.setHistory(await assetService.getAssetHistory(assetId));
     }
-    selectAsset(selectedAssetId.value);
+    selectAsset(assetId);
   }
   loading.value = false;
 });
@@ -82,17 +82,23 @@ watch(updatedAsset, (v) => {
   }
 });
 
+watch(() => session.value?.isTrading, (isTrading) => {
+  if (isTrading === false) {
+    unsubscribeAll();
+  }
+});
+
 const onSell = () => {
   router.push({
     name: "/user/action",
-    query: { mode: OrderType.Sell, id: selectedAssetId.value },
+    query: { mode: OrderType.Sell, id: assetId },
   });
 };
 
 const onBuy = () => {
   router.push({
     name: "/user/action",
-    query: { mode: OrderType.Buy, id: selectedAssetId.value },
+    query: { mode: OrderType.Buy, id: assetId },
   });
 };
 </script>
