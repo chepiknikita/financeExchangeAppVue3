@@ -76,16 +76,17 @@ const payload = computed(() => {
     datasets: [
       {
         label: 'Цена',
-        borderColor: '#4f46e5',
+        borderColor: '#4A9FFF',
+        borderWidth: 2,
         tension: 0.4,
-        pointBackgroundColor: '#4f46e5',
-        pointBorderColor: '#ffffff',
+        pointBackgroundColor: '#4A9FFF',
+        pointBorderColor: '#141A2E',
         pointBorderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 4,
+        pointHoverRadius: 5,
         data: chartData,
-        backgroundColor: 'rgba(79, 70, 229, 0.2)',
-        fill: false
+        backgroundColor: 'rgba(74, 159, 255, 0.08)',
+        fill: true
       }
     ]
   };
