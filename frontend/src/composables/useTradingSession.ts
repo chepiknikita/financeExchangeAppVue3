@@ -9,13 +9,13 @@ export default function useTradingSession() {
   const { info } = useNotifications();
   const session = ref<TradingSession | null>(null);
 
-  async function initSubscription() {
+  function initSubscription() {
     subscribe("trading-session", {}, "trading-session-status", (data) => {
       console.log("Прослушивание канала - trading-session-status", data);
       if (data) {
         session.value?.update(data);
         info(
-          `Торги ${data.isTrading ? "запущены" : "отстановлены"}`,
+          `Торги ${data.isTrading ? "запущены" : "остановлены"}`,
           "Информация"
         );
       }

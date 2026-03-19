@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AssetService } from 'src/asset/asset.service';
 import { TradingSessionService } from 'src/tradingSession/tradingSession.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { CreateOrderDto } from './dto/creat-order.dto';
-import { Order, OrderType } from './entities/order.entity';
-import { Asset, UserAsset } from 'generated/prisma';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderType } from './entities/order.entity';
+import { Asset, User, UserAsset, Prisma } from 'generated/prisma';
 import { WebSocketFacadeService } from '../websocket/services/websocket-facade.service';
 
 @Injectable()
@@ -25,7 +25,10 @@ export class OrderService {
     }
 
     const user = await this.userService.getById(createOrderDto.userId);
+    if (!user) throw new NotFoundException('Пользователь не найден');
+
     const asset = await this.assetService.getById(createOrderDto.assetId);
+    if (!asset) throw new NotFoundException('Актив не найден');
 
     const order =
       createOrderDto.type === OrderType.Buy
@@ -43,7 +46,7 @@ export class OrderService {
   }
 
   private async handleBuyOrder(
-    user: any,
+    user: User,
     asset: Asset,
     quantity: number,
   ) {
@@ -91,7 +94,7 @@ export class OrderService {
   }
 
   private async handleSellOrder(
-    user: any,
+    user: User,
     asset: Asset,
     quantity: number,
   ) {
@@ -111,7 +114,7 @@ export class OrderService {
     const totalValue = asset.price * quantity;
 
     return await this.prisma.$transaction(async (tx) => {
-      const order = await this.prisma.order.create({
+      const order = await tx.order.create({
         data: {
           userId: user.id,
           assetId: asset.id,
@@ -140,14 +143,14 @@ export class OrderService {
   }
 
   private async updateUserAsset(
-    tx: any,
+    tx: Prisma.TransactionClient,
     userId: number,
     assetId: number,
     quantity: number,
     buyPrice: number,
     status: OrderType,
   ): Promise<void> {
-    const existingUserAsset: UserAsset = await tx.userAsset.findUnique({
+    const existingUserAsset: UserAsset | null = await tx.userAsset.findUnique({
       where: {
         userId_assetId: {
           userId,

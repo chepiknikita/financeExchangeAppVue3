@@ -12,7 +12,7 @@ export class AssetController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<Asset> {
+  async getById(@Param('id') id: string): Promise<Asset | null> {
     return await this.assetService.getById(+id);
   }
 

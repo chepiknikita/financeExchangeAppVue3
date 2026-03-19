@@ -1,54 +1,81 @@
 <template>
-  <v-footer height="40" app>
-    <a
-      v-for="item in items"
-      :key="item.title"
-      :href="item.href"
-      :title="item.title"
-      class="d-inline-block mx-2 social-link"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <v-icon :icon="item.icon" :size="24" />
-    </a>
+  <v-footer
+    v-if="!mobile"
+    class="app-footer"
+    height="44"
+    app
+    :style="{
+      background: 'rgba(11, 15, 26, 0.85)',
+      borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+      padding: '0 24px',
+    }"
+  >
+    <div class="footer-inner d-flex align-center justify-space-between w-100">
+      <div class="d-flex align-center gap-2">
+        <a
+          v-for="item in items"
+          :key="item.title"
+          :href="item.href"
+          :title="item.title"
+          class="social-link"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <v-icon :icon="item.icon" size="18" />
+        </a>
+      </div>
 
-    <div
-      class="text-caption text-disabled"
-      style="position: absolute; right: 16px"
-    >
-      &copy; 2025 Nikita Chepik
+      <div class="footer-copy text-caption">
+        &copy; 2025 Nikita Chepik
+      </div>
     </div>
   </v-footer>
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify';
+
+const { mobile } = useDisplay();
+
 const items = [
   {
     title: "Nikita Chepik Telegram",
-    icon: [
-      "M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M16.9,8.1l-1.7,8.2c-0.1,0.6-0.5,0.7-0.9,0.4l-2.6-2c-0.6,0.6-1.2,1.1-1.3,1.3c-0.2,0.1-0.3,0.3-0.5,0.3c-0.3,0-0.3-0.2-0.4-0.4l-0.9-3L5.9,12c-0.6-0.2-0.6-0.6,0.1-0.9l10.2-3.9 C16.6,7.1,17.1,7.3,16.9,8.1z M14.5,9l-5.7,3.6l0.9,3l0.2-2l4.9-4.4C15.1,8.9,14.9,8.9,14.5,9z",
-    ],
-    href: "https://x.com/vuetifyjs",
+    icon: "mdi-telegram",
+    href: "https://t.me/",
   },
   {
     title: "Nikita Chepik GitHub",
     icon: "mdi-github",
-    href: "https://github.com/vuetifyjs/vuetify",
+    href: "https://github.com/",
   },
   {
     title: "Nikita Chepik Instagram",
     icon: "mdi-instagram",
-    href: "https://community.vuetifyjs.com/",
+    href: "https://instagram.com/",
   },
 ];
 </script>
 
-<style scoped lang="sass">
-.social-link :deep(.v-icon)
-  color: rgba(var(--v-theme-on-background), var(--v-disabled-opacity))
-  text-decoration: none
-  transition: .2s ease-in-out
+<style scoped lang="scss">
+.app-footer {
+  backdrop-filter: blur(8px);
+}
 
-  &:hover
-    color: rgba(25, 118, 210, 1)
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(200, 208, 224, 0.35);
+  transition: color 0.2s ease;
+  text-decoration: none;
+
+  &:hover {
+    color: #4A9FFF;
+  }
+}
+
+.footer-copy {
+  color: rgba(200, 208, 224, 0.3);
+  font-size: 11px;
+}
 </style>

@@ -61,7 +61,8 @@ export class Asset implements IAsset {
   }
 
   public getProfitPercent() {
-    return ((this.price - this.closingPrice)/this.price) * 100
+    if (this.price === 0) return 0;
+    return ((this.price - this.closingPrice) / this.price) * 100;
   }
 
   public getTotalProfit() {

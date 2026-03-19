@@ -15,10 +15,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale,
+  type TooltipItem,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import type { PriceHistory } from '@/api/intarfaces/asset';
+import type { PriceHistory } from '@/entities/Asset';
 import 'chartjs-adapter-date-fns'
 import { ru } from "date-fns/locale";
 
@@ -75,16 +76,17 @@ const payload = computed(() => {
     datasets: [
       {
         label: 'Цена',
-        borderColor: '#4f46e5',
+        borderColor: '#4A9FFF',
+        borderWidth: 2,
         tension: 0.4,
-        pointBackgroundColor: '#4f46e5',
-        pointBorderColor: '#ffffff',
+        pointBackgroundColor: '#4A9FFF',
+        pointBorderColor: '#141A2E',
         pointBorderWidth: 2,
         pointRadius: 0,
-        pointHoverRadius: 4,
+        pointHoverRadius: 5,
         data: chartData,
-        backgroundColor: 'rgba(79, 70, 229, 0.2)',
-        fill: false
+        backgroundColor: 'rgba(74, 159, 255, 0.08)',
+        fill: true
       }
     ]
   };
@@ -98,7 +100,7 @@ const options = computed(() => {
       x: {
         type: 'time' as const,
         time: {
-          unit: 'day',
+          unit: 'day' as const,
           displayFormats: { day: 'dd.MM.yyyy', week: 'dd.MM.yyyy' },
           tooltipFormat: 'dd.MM.yyyy HH:mm',
         },
@@ -113,7 +115,7 @@ const options = computed(() => {
           font: {
             size: 10,
           },
-          source: 'data',
+          source: 'data' as const,
           autoSkip: true,
           maxTicksLimit: 8,
         },
@@ -123,7 +125,7 @@ const options = computed(() => {
       },
       y: {
         beginAtZero: false,
-        position: 'right',
+        position: 'right' as const,
         grid: {
           color: 'rgba(148, 163, 184, 0.1)',
         },
@@ -136,10 +138,10 @@ const options = computed(() => {
         display: false
       },
       tooltip: {
-        mode: 'nearest',
+        mode: 'nearest' as const,
         intersect: false,
         callbacks: {
-          title: (context) => {
+          title: (context: TooltipItem<'line'>[]) => {
             const date = new Date(context[0].parsed.x);
             return date.toLocaleString('ru-RU', {
               day: '2-digit',
@@ -149,7 +151,7 @@ const options = computed(() => {
               minute: '2-digit'
             });
           },
-          label: (context) => {
+          label: (context: TooltipItem<'line'>) => {
             return `Цена: ${context.parsed.y.toFixed(2)}`;
           }
         }
@@ -157,7 +159,7 @@ const options = computed(() => {
     },
     interaction: {
       intersect: false,
-      mode: 'index'
+      mode: 'index' as const,
     },
     elements: {
       line: {

@@ -1,27 +1,33 @@
 <template>
-  <div v-if="!asset">Данных нет</div>
-  <div v-else class="d-flex flex-column wrapper">
-    <div class="text-center">В портфеле</div>
-    <div class="border py-2 px-4 rounded-sm ma-2 balance-info">
-      <div class="d-flex justify-space-between text-disabled">
-        <div>На счете:</div>
-        <div>{{ asset.quantity }} шт</div>
+  <div v-if="!asset" />
+  <div v-else class="bank-card portfolio-card mb-4">
+    <div class="section-title mb-3">В портфеле</div>
+
+    <div class="metrics-grid">
+      <div class="metric-item">
+        <div class="metric-item__label">На счёте</div>
+        <div class="metric-item__value">{{ asset.quantity }} шт</div>
       </div>
-      <div class="d-flex justify-space-between text-disabled">
-        <div>Средняя цена:</div>
-        <!-- <div>{{ asset.averageBuyPrice }} шт</div> -->
+      <div class="metric-item">
+        <div class="metric-item__label">Текущая цена</div>
+        <div class="metric-item__value">{{ asset.price }} ₽</div>
       </div>
-      <div class="d-flex justify-space-between text-disabled">
-        <div>Текущая цена:</div>
-        <div>{{ asset.price }} шт</div>
+      <div class="metric-item">
+        <div class="metric-item__label">Цена открытия</div>
+        <div class="metric-item__value">{{ asset.closingPrice }} ₽</div>
       </div>
-      <div class="d-flex justify-space-between text-disabled">
-        <div>Цена открытия:</div>
-        <div>{{ asset.closingPrice }} шт</div>
-      </div>
-      <div class="d-flex justify-space-between text-disabled">
-        <div>Изменение стоимости:</div>
-        <div>{{ +asset.getProfit().toFixed(2) }} | {{ +asset.getProfitPercent().toFixed(2) }}</div>
+      <div class="metric-item">
+        <div class="metric-item__label">Изменение</div>
+        <div
+          class="metric-item__value"
+          :class="{
+            'growth': asset.getProfit() > 0,
+            'fall': asset.getProfit() < 0,
+          }"
+        >
+          {{ +asset.getProfit().toFixed(2) }} ₽
+          <span class="metric-pct">({{ +asset.getProfitPercent().toFixed(2) }}%)</span>
+        </div>
       </div>
     </div>
   </div>
@@ -36,8 +42,15 @@ defineProps<{
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  width: 400px;
-  margin: 0 auto 40px;
+.portfolio-card {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.metric-pct {
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.7;
 }
 </style>

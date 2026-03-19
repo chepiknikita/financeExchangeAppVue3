@@ -52,19 +52,19 @@ export class Order implements IOrder {
   }
 
   static getOrderRequest(
-    status: OrderType,
+    type: OrderType,
     user: User | null,
     asset: Asset | null,
     quantity?: string
   ): OrderRequest | null {
-    if (user && asset && quantity) {
-      return {
-        userId: user.id,
-        assetId: asset.id,
-        type: status,
-        quantity: +quantity,
-      };
-    }
-    return null;
+    if (!user || !asset || !quantity) return null;
+    const parsedQuantity = parseInt(quantity, 10);
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) return null;
+    return {
+      userId: user.id,
+      assetId: asset.id,
+      type,
+      quantity: parsedQuantity,
+    };
   }
 }
